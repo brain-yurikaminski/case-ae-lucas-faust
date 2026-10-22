@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: dados
+    description: >
+      CSVs brutos do Pontua+ (versão v1 dos dados), lidos diretamente de dados/ via
+      external_location do dbt-duckdb, sem cópia para seeds. Extração em 01/10/2026.
+    meta:
+      external_location: "dados/{name}.csv"
+    tables:
+      - name: orders
+        description: "Sistema de pedidos. Uma linha por pedido."
+      - name: order_items
+        description: "Itens dos pedidos. Uma linha por item de pedido."
+      - name: carts
+        description: "Carrinhos e canal de compra. Uma linha por carrinho."
+      - name: points_ledger
+        description: "Livro-razão de pontos. Uma linha por movimento de saldo."
+      - name: dim_operation
+        description: "Cadastro dos tipos de movimentação do ledger. Uma linha por operation_code."
+      - name: cards
+        description: "Cartões/contas. Uma linha por account_id."
+      - name: redeemed_points
+        description: "Movimentos de pontos ligados aos itens de pedido (reserva, cancelamento de reserva e resgate)."
+      - name: crm_events
+        description: "Exportação da ferramenta de CRM. Uma linha por evento. Horário em UTC, sem fuso explícito."
+      - name: relatorio_mensal_cliente
+        description: "Relatório mensal do operador ao banco. Uma linha por mês."

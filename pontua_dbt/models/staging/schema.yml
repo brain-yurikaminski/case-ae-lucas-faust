@@ -1,0 +1,267 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: >
+      Pedidos do Pontua+. Grão: 1 linha por pedido (order_id). Só tipagem e renomeação.
+      A coluna user_id do CSV foi descartada (100% vazia); o usuário do pedido vem de stg_carts via cart_id.
+    columns:
+      - name: order_id
+        description: "Identificador do pedido. Chave primária."
+        data_tests: [unique, not_null]
+      - name: cart_id
+        description: "Carrinho que originou o pedido. Relação 1:1 com stg_carts."
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_carts')
+                field: cart_id
+      - name: status
+        description: "Status do pedido: APROVADO, CANCELADO, FINALIZADO_COM_SUCESSO (só compra de pontos), ESTORNADO, INVALIDO ou AGUARDANDO_CONFIRMACAO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [APROVADO, CANCELADO, FINALIZADO_COM_SUCESSO, ESTORNADO, INVALIDO, AGUARDANDO_CONFIRMACAO]
+      - name: created_at
+        description: "Momento de criação do pedido, com fuso (-03:00, horário de Brasília)."
+        data_tests: [not_null]
+      - name: status_updated_at
+        description: "Momento da última mudança de status, com fuso (-03:00)."
+
+  - name: stg_order_items
+    description: >
+      Itens dos pedidos. Grão: 1 linha por item de pedido (order_item_id). 18 pedidos têm 2 itens.
+      Só tipagem e renomeação. Para classificar o tipo de resgate use supplier_responsible, não supplier_name
+      (supplier_name foi renomeado em 10/09/2026 para 'Casa&Cia (via MegaMagazine)').
+    columns:
+      - name: order_item_id
+        description: "Identificador do item de pedido. Chave primária."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "Pedido ao qual o item pertence."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: created_at
+        description: "Momento de criação do item, com fuso (-03:00). Igual ao created_at do pedido."
+      - name: status
+        description: "Status do item (mesmo domínio do pedido). Em 4 itens difere do status do pedido."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [APROVADO, CANCELADO, FINALIZADO_COM_SUCESSO, ESTORNADO, INVALIDO, AGUARDANDO_CONFIRMACAO]
+      - name: product_type
+        description: "Tipo de produto: PASSAGEM (aéreo), PRODUTO (varejo), TRANSFERENCIA (parceiros e Pix) ou COMPRA_PONTOS (compra de pontos, não é resgate)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [PASSAGEM, PRODUTO, TRANSFERENCIA, COMPRA_PONTOS]
+      - name: supplier_name
+        description: "Nome do fornecedor como exibido. Mudou em 10/09/2026 (Casa&Cia passou a 'Casa&Cia (via MegaMagazine)'). Não use para classificar."
+      - name: supplier_responsible
+        description: "Fornecedor responsável, estável no tempo. Use este campo para classificar o tipo de resgate."
+      - name: category_macro
+        description: "Categoria macro do sistema de origem: Aereas, Varejo ou Cashback (Pix e compra de pontos). Transferências a parceiros (Nuvem, Pontos Max) vêm como Varejo."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Aereas, Varejo, Cashback]
+      - name: paid_points
+        description: "Pontos pagos no item. Nulo nos 520 itens de COMPRA_PONTOS."
+      - name: paid_currency
+        description: "Parte paga em reais (pagamento misto), em R$."
+      - name: product_value
+        description: "Valor do produto em reais (R$). No Pix, é paid_points x 0,019."
+      - name: refunded_points
+        description: "Pontos estornados parcialmente (só em itens APROVADO; 103 itens)."
+      - name: quantity
+        description: "Quantidade. Sempre 1 nos dados."
+
+  - name: stg_carts
+    description: "Carrinhos de compra. Grão: 1 linha por carrinho (cart_id). É a única fonte do usuário de um pedido."
+    columns:
+      - name: cart_id
+        description: "Identificador do carrinho. Chave primária."
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: "Usuário dono do carrinho. Existe em stg_cards."
+        data_tests: [not_null]
+      - name: channel
+        description: "Canal de compra: APP ou WEB."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [APP, WEB]
+
+  - name: stg_points_ledger
+    description: >
+      Livro-razão de pontos. Grão: 1 linha por movimento de saldo (movement_id). Pontos positivos são crédito
+      e negativos são débito. O ledger já é líquido de estornos: o estorno entra como crédito (operação 14).
+    columns:
+      - name: movement_id
+        description: "Identificador do movimento. Chave primária."
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: "Usuário dono da conta."
+      - name: account_id
+        description: "Conta/cartão do movimento. Existe em stg_cards."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_cards')
+                field: account_id
+      - name: operation_code
+        description: "Tipo de movimento (ver stg_dim_operation). Só ocorrem 1, 2, 14, 100 e 103."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_operation')
+                field: operation_code
+      - name: points
+        description: "Pontos do movimento, com sinal (crédito positivo, débito negativo)."
+        data_tests: [not_null]
+      - name: movement_at
+        description: "Momento do movimento, com fuso (-03:00)."
+      - name: valid_until
+        description: "Validade dos pontos creditados. Nulo para débitos e estornos."
+
+  - name: stg_dim_operation
+    description: "Cadastro dos tipos de movimentação do ledger. Grão: 1 linha por operation_code."
+    columns:
+      - name: operation_code
+        description: "Código da operação. Chave primária."
+        data_tests: [unique, not_null]
+      - name: operation_name
+        description: "Nome: CREDITO, RESGATE, EXPIRACAO, ESTORNO_CREDITO, ESTORNO_PEDIDO, CREDITO_MIGRACAO ou EXPIRACAO_MIGRACAO."
+      - name: direction
+        description: "Direção: CREDIT ou DEBIT."
+
+  - name: stg_cards
+    description: "Cartões/contas. Grão: 1 linha por account_id. Um usuário pode ter vários cartões; exatamente um tem is_most_recent = true."
+    columns:
+      - name: account_id
+        description: "Identificador da conta/cartão. Chave primária."
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: "Usuário titular."
+        data_tests: [not_null]
+      - name: card_class
+        description: "Nível do cartão, do mais simples ao mais alto: Essencial, Gold, Platinum, Platinum Elo, Infinite, Black."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Essencial, Gold, Platinum, Platinum Elo, Infinite, Black]
+      - name: card_flag
+        description: "Bandeira: VISA, MASTERCARD ou ELO."
+      - name: created_at
+        description: "Criação do cadastro, com fuso (-03:00)."
+      - name: is_most_recent
+        description: "Marca o cartão mais recente do usuário. Em 1.858 usuários não coincide com o created_at mais novo."
+
+  - name: stg_redeemed_points
+    description: >
+      Movimentos de pontos ligados a itens de pedido. Grão: 1 linha por (order_item_id, account_id, movement_type);
+      (order_item_id, movement_type) NÃO é único porque 1.471 itens têm o RESGATE dividido em 2 contas.
+      Só existe para itens APROVADO e ESTORNADO.
+    columns:
+      - name: order_item_id
+        description: "Item de pedido ao qual o movimento se refere."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_order_items')
+                field: order_item_id
+      - name: account_id
+        description: "Conta debitada."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_cards')
+                field: account_id
+      - name: movement_type
+        description: "RESERVA, CANCELADO_RESERVA (anula a reserva) ou RESGATE (débito efetivo)."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [RESGATE, RESERVA, CANCELADO_RESERVA]
+      - name: points
+        description: "Pontos do movimento (negativos nos débitos)."
+
+  - name: stg_crm_events
+    description: >
+      Eventos da ferramenta de CRM. Grão: 1 linha por evento (sem chave natural). O horário original não tem fuso e
+      está em UTC: use event_ts_brt/event_date_brt para comparar com pedidos e ledger.
+    columns:
+      - name: event_ts_utc
+        description: "Momento do evento em UTC (timestamp com fuso)."
+        data_tests: [not_null]
+      - name: event_ts_brt
+        description: "Momento do evento em horário de Brasília (America/Sao_Paulo), sem fuso."
+      - name: event_date_brt
+        description: "Data do evento em horário de Brasília. Use para agrupar por dia ou mês."
+      - name: user_id
+        description: "Usuário. Nulo em 5,8% dos eventos (push e in-app)."
+      - name: device_id
+        description: "Dispositivo. Cada usuário tem um só device_id."
+      - name: event_name
+        description: "Notification Sent, Notification Viewed, Notification Clicked, Notification Failed, Push Impressions ou Order Approved."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Notification Sent, Notification Viewed, Notification Clicked, Notification Failed, Push Impressions, Order Approved]
+      - name: campaign_type
+        description: "Canal: Email, Mobile Push - Android, Mobile Push - iOS, Push (impressões e cliques), InApp ou Facebook Audiences. Nulo em Order Approved."
+      - name: campaign_id
+        description: "Identificador da campanha. Nulo em Order Approved. CMP_LANCAMENTO_PIX_* é a comunicação de lançamento do Pix."
+      - name: control_group
+        description: "Grupo de controle. 100% vazio: não há grupo de controle nos dados."
+      - name: campaign_name
+        description: "Do JSON event_properties. Igual ao campaign_id quando existe."
+      - name: platform
+        description: "Do JSON: android ou ios (só em Notification Sent de push)."
+      - name: link
+        description: "Do JSON: destino do clique (catalogo ou oferta; só em e-mail)."
+      - name: reason
+        description: "Do JSON: motivo da falha (hard_bounce, soft_bounce ou blocked; só em Notification Failed)."
+      - name: open_count
+        description: "Do JSON: número de aberturas (1 ou 2; só em Notification Viewed de e-mail)."
+      - name: event_properties
+        description: "JSON original, mantido para auditoria."
+
+  - name: stg_relatorio_mensal_cliente
+    description: >
+      Relatório mensal do operador ao banco. Grão: 1 linha por mês (mes). Números do operador, não validados:
+      pix_pontos e pix_transacoes incluem todos os status de itens Pix, enquanto pix_reais fica próximo só dos aprovados.
+    columns:
+      - name: mes
+        description: "Mês de referência (AAAA-MM). Chave primária."
+        data_tests: [unique, not_null]
+      - name: aereas_pct
+        description: "Percentual de pontos resgatados em passagens aéreas, segundo o operador."
+      - name: varejo_pct
+        description: "Percentual de pontos em varejo, segundo o operador (inclui transferências a parceiros)."
+      - name: pix_pct
+        description: "Percentual de pontos em Pix, segundo o operador. Nulo antes de maio/2026."
+      - name: pix_reais
+        description: "Valor Pix em reais segundo o operador (R$)."
+      - name: pix_pontos
+        description: "Pontos Pix segundo o operador."
+      - name: pix_transacoes
+        description: "Número de transações Pix segundo o operador."
+      - name: emails_enviados
+        description: "E-mails enviados segundo o operador. Em ago e set/2026 é 1,35x o que o CRM registra."
+      - name: push_enviados
+        description: "Pushes enviados segundo o operador. Nulo de janeiro a março."

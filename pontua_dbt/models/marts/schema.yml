@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: fct_resgates
+    description: >
+      Resgates de pontos. Grão: 1 linha por item de pedido (order_item_id). Contém somente itens com status
+      APROVADO ou ESTORNADO e paid_points preenchido; COMPRA_PONTOS fica fora porque não é resgate.
+      Itens ESTORNADO ficam na tabela (flag_estornado = true) com pontos_liquidos = 0, para que a soma de
+      pontos_liquidos reconcilie com o ledger (operações 2 e 14). Para metas de aéreas e varejo, some pontos_liquidos
+      por tipo_resgate e mes. Para volume bruto de pontos, use pontos_brutos.
+    columns:
+      - name: order_item_id
+        description: "Identificador do item de pedido. Chave primária."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "Pedido do item."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: user_id
+        description: "Usuário que resgatou, obtido via carrinho (o user_id do pedido é vazio)."
+        data_tests: [not_null]
+      - name: data_brt
+        description: "Data do resgate em horário de Brasília (America/Sao_Paulo)."
+        data_tests: [not_null]
+      - name: mes
+        description: "Mês do resgate no formato AAAA-MM, em horário de Brasília."
+        data_tests: [not_null]
+      - name: tipo_resgate
+        description: >
+          Classificação do resgate: AEREO (passagens), VAREJO_PRODUTO (produtos de lojas),
+          TRANSFERENCIA_PARCEIRO (transferência para Nuvem Recompensas ou Pontos Max, contada como varejo na meta do contrato)
+          ou PIX (Pontos no Pix, lançado em 27/05/2026). Derivado de product_type e supplier_responsible.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO, PIX]
+      - name: status
+        description: "Status do item: APROVADO ou ESTORNADO."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [APROVADO, ESTORNADO]
+      - name: flag_estornado
+        description: "Verdadeiro quando o item foi estornado por inteiro (status ESTORNADO)."
+        data_tests: [not_null]
+      - name: supplier_responsible
+        description: "Fornecedor responsável pelo item (estável no tempo)."
+      - name: pontos_brutos
+        description: "Pontos pagos no item (paid_points), antes de estornos."
+        data_tests: [not_null]
+      - name: pontos_estornados
+        description: "Pontos devolvidos ao cliente. Para ESTORNADO: todos os pontos do item. Para APROVADO: refunded_points (estorno parcial, 0 se não houve)."
+        data_tests: [not_null]
+      - name: pontos_liquidos
+        description: "Pontos efetivamente consumidos. 0 para itens ESTORNADO; para APROVADO é pontos_brutos menos o estorno parcial. Soma total reconcilia com o ledger (operações 2 e 14) em 320.027.439."
+        data_tests: [not_null]
+      - name: valor_reais
+        description: "Valor do produto em reais (R$), product_value do item. No PIX equivale a pontos_brutos x 0,019."
