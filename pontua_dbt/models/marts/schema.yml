@@ -1,0 +1,414 @@
+version: 2
+
+models:
+  - name: fct_resgates
+    description: >
+      Resgates de pontos. Grão: 1 linha por item de pedido (order_item_id). Contém somente itens com status
+      APROVADO ou ESTORNADO e paid_points preenchido; COMPRA_PONTOS fica fora porque não é resgate.
+      Itens ESTORNADO ficam na tabela (flag_estornado = true) com pontos_liquidos = 0, para que a soma de
+      pontos_liquidos reconcilie com o ledger (operações 2 e 14). Para metas de aéreas e varejo, some pontos_liquidos
+      por tipo_resgate e mes. Para volume bruto de pontos, use pontos_brutos.
+    columns:
+      - name: order_item_id
+        description: "Identificador do item de pedido. Chave primária."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "Pedido do item."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: user_id
+        description: "Usuário que resgatou, obtido via carrinho (o user_id do pedido é vazio)."
+        data_tests: [not_null]
+      - name: data_brt
+        description: "Data do resgate em horário de Brasília (America/Sao_Paulo)."
+        data_tests: [not_null]
+      - name: mes
+        description: "Mês do resgate no formato AAAA-MM, em horário de Brasília."
+        data_tests: [not_null]
+      - name: tipo_resgate
+        description: >
+          Classificação do resgate: AEREO (passagens), VAREJO_PRODUTO (produtos de lojas),
+          TRANSFERENCIA_PARCEIRO (transferência para Nuvem Recompensas ou Pontos Max, contada como varejo na meta do contrato)
+          ou PIX (Pontos no Pix, lançado em 27/05/2026). Derivado de product_type e supplier_responsible.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO, PIX]
+      - name: status
+        description: "Status do item: APROVADO ou ESTORNADO."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [APROVADO, ESTORNADO]
+      - name: flag_estornado
+        description: "Verdadeiro quando o item foi estornado por inteiro (status ESTORNADO)."
+        data_tests: [not_null]
+      - name: supplier_responsible
+        description: "Fornecedor responsável pelo item (estável no tempo)."
+      - name: pontos_brutos
+        description: "Pontos pagos no item (paid_points), antes de estornos."
+        data_tests: [not_null]
+      - name: pontos_estornados
+        description: "Pontos devolvidos ao cliente. Para ESTORNADO: todos os pontos do item. Para APROVADO: refunded_points (estorno parcial, 0 se não houve)."
+        data_tests: [not_null]
+      - name: pontos_liquidos
+        description: "Pontos efetivamente consumidos. 0 para itens ESTORNADO; para APROVADO é pontos_brutos menos o estorno parcial. Soma total reconcilia com o ledger (operações 2 e 14) em 320.027.439."
+        data_tests: [not_null]
+      - name: valor_reais
+        description: "Valor do produto em reais (R$), product_value do item. No PIX equivale a pontos_brutos x 0,019."
+
+  - name: mart_metas_mensal
+    description: >
+      Metas contratuais por mês. Grão: 1 linha por mês (mes, AAAA-MM, horário de Brasília). Base: pontos_liquidos de
+      fct_resgates (itens APROVADO e ESTORNADO; estornados contam 0). Os percentuais são frações de 0 a 1 sobre o total
+      de pontos líquidos do mês e os 4 tipos somam 1. Há duas leituras de varejo: estrita (só produtos) e ampla
+      (produtos mais transferências a parceiros, como o operador reporta). As colunas relatorio_* vêm do relatório
+      mensal do operador (escala 0 a 100) e as dif_* são relatório menos o nosso cálculo, em pontos percentuais.
+      Os meses de out a dez/2025 não têm linha no relatório (colunas relatorio_* e dif_* nulas).
+    columns:
+      - name: mes
+        description: "Mês no formato AAAA-MM (horário de Brasília). Chave primária."
+        data_tests: [unique, not_null]
+      - name: pontos_liquidos_total
+        description: "Total de pontos líquidos resgatados no mês, todos os tipos."
+        data_tests: [not_null]
+      - name: pontos_aereo
+        description: "Pontos líquidos em passagens aéreas (tipo_resgate AEREO)."
+      - name: pontos_varejo_produto
+        description: "Pontos líquidos em produtos de varejo (tipo_resgate VAREJO_PRODUTO)."
+      - name: pontos_transferencia_parceiro
+        description: "Pontos líquidos em transferências para parceiros (Nuvem Recompensas e Pontos Max)."
+      - name: pontos_pix
+        description: "Pontos líquidos no Pontos no Pix (tipo_resgate PIX). Zero antes de 27/05/2026."
+      - name: pct_aereo
+        description: "Fração (0 a 1) dos pontos líquidos do mês em aéreas."
+        data_tests: [not_null]
+      - name: pct_varejo_produto
+        description: "Fração (0 a 1) em produtos de varejo."
+      - name: pct_transferencia_parceiro
+        description: "Fração (0 a 1) em transferências a parceiros."
+      - name: pct_pix
+        description: "Fração (0 a 1) em Pix."
+      - name: pct_varejo_estrito
+        description: "Varejo estrito: só VAREJO_PRODUTO (igual a pct_varejo_produto)."
+      - name: pct_varejo_amplo
+        description: "Varejo amplo: VAREJO_PRODUTO mais TRANSFERENCIA_PARCEIRO, como o operador classifica (category_macro Varejo)."
+      - name: atende_meta_aereo
+        description: "Verdadeiro se pct_aereo >= 0,50 (meta contratual de aéreas)."
+      - name: atende_meta_varejo_estrito
+        description: "Verdadeiro se pct_varejo_estrito >= 0,20 (meta de varejo, leitura estrita)."
+      - name: atende_meta_varejo_amplo
+        description: "Verdadeiro se pct_varejo_amplo >= 0,20 (meta de varejo, leitura do operador)."
+      - name: relatorio_aereas_pct
+        description: "Percentual de aéreas informado pelo operador (0 a 100)."
+      - name: relatorio_varejo_pct
+        description: "Percentual de varejo informado pelo operador (0 a 100)."
+      - name: relatorio_pix_pct
+        description: "Percentual de Pix informado pelo operador (0 a 100). Nulo antes de maio/2026."
+      - name: dif_aereas_pp
+        description: "relatorio_aereas_pct menos pct_aereo x 100, em pontos percentuais."
+      - name: dif_varejo_amplo_pp
+        description: "relatorio_varejo_pct menos pct_varejo_amplo x 100, em pontos percentuais."
+      - name: dif_pix_pp
+        description: "relatorio_pix_pct menos pct_pix x 100, em pontos percentuais. Nulo antes de maio/2026."
+
+  - name: mart_pix_preco_mensal
+    description: >
+      Preço por ponto do Pontos no Pix por mês. Grão: 1 linha por mês (horário de Brasília). Usa itens Pix de TODOS os
+      status de stg_order_items (e não só fct_resgates), para reproduzir o que o operador soma. Compara o preço dos
+      itens aprovados, o de todos os status e o preço implícito do relatório (pix_reais / pix_pontos). O preço
+      contratado é R$ 0,019 por ponto.
+    columns:
+      - name: mes
+        description: "Mês AAAA-MM (horário de Brasília). Chave primária. Começa em 2026-05."
+        data_tests: [unique, not_null]
+      - name: itens_todos
+        description: "Itens Pix em qualquer status (APROVADO, CANCELADO, ESTORNADO, INVALIDO, AGUARDANDO_CONFIRMACAO)."
+      - name: itens_aprovados
+        description: "Itens Pix com status APROVADO."
+      - name: pontos_todos
+        description: "Pontos de todos os itens Pix, qualquer status."
+      - name: pontos_aprovados
+        description: "Pontos dos itens Pix APROVADO."
+      - name: reais_todos
+        description: "Reais (R$) de todos os itens Pix, qualquer status."
+      - name: reais_aprovados
+        description: "Reais (R$) dos itens Pix APROVADO."
+      - name: preco_por_ponto_aprovados
+        description: "R$ por ponto dos itens APROVADO (reais_aprovados / pontos_aprovados)."
+        data_tests: [not_null]
+      - name: preco_por_ponto_todos
+        description: "R$ por ponto de todos os status (reais_todos / pontos_todos)."
+      - name: relatorio_pix_transacoes
+        description: "Transações Pix informadas pelo operador. Bate com itens_todos."
+      - name: relatorio_pix_pontos
+        description: "Pontos Pix informados pelo operador. Bate com pontos_todos."
+      - name: relatorio_pix_reais
+        description: "Reais Pix informados pelo operador (R$). Fica próximo de reais_aprovados, não de reais_todos."
+      - name: preco_implicito_relatorio
+        description: "relatorio_pix_reais / relatorio_pix_pontos: o preço por ponto que o relatório implica (cerca de R$ 0,016)."
+      - name: dif_relatorio_vs_aprovados
+        description: "preco_implicito_relatorio menos preco_por_ponto_aprovados (R$ por ponto). Negativo = relatório abaixo do preço real."
+
+  - name: mart_pix_diario
+    description: >
+      Pix e campanha de lançamento por dia. Grão: 1 linha por dia em horário de Brasília (data_brt), de todos os dias
+      entre o primeiro e o último dia com resgate Pix ou evento da campanha CMP_LANCAMENTO_PIX (dias sem atividade
+      aparecem com zero). Resgates vêm de fct_resgates (APROVADO e ESTORNADO). Eventos da campanha usam event_ts_brt
+      (convertido de UTC). Não há grupo de controle (control_group vazio): a tabela mostra coincidência no tempo,
+      não prova causa.
+    columns:
+      - name: data_brt
+        description: "Dia em horário de Brasília. Chave primária."
+        data_tests: [unique, not_null]
+      - name: itens_pix
+        description: "Itens Pix resgatados no dia."
+      - name: pontos_brutos_pix
+        description: "Pontos brutos dos itens Pix do dia."
+      - name: pontos_liquidos_pix
+        description: "Pontos líquidos dos itens Pix do dia (estornados contam 0)."
+      - name: enviados
+        description: "Eventos Notification Sent da campanha CMP_LANCAMENTO_PIX no dia."
+      - name: abertos
+        description: "Eventos Notification Viewed da campanha no dia (pode haver mais de um por usuário)."
+      - name: clicados
+        description: "Eventos Notification Clicked da campanha no dia."
+      - name: usuarios_enviados
+        description: "Usuários distintos que receberam a campanha no dia."
+      - name: usuarios_abertos
+        description: "Usuários distintos que abriram a campanha no dia."
+      - name: usuarios_clicados
+        description: "Usuários distintos que clicaram na campanha no dia."
+
+  - name: mart_pix_usuarios
+    description: >
+      Ordem entre campanha de lançamento e primeiro resgate Pix. Grão: 1 linha por usuário que resgatou Pix
+      (itens APROVADO ou ESTORNADO). Mostra se o usuário recebeu, abriu ou clicou na campanha CMP_LANCAMENTO_PIX antes
+      do primeiro resgate. Todos os horários em Brasília. Não há grupo de controle (control_group vazio) e quem não
+      resgatou Pix não está na tabela, então não mede efeito causal nem conversão da campanha.
+    columns:
+      - name: user_id
+        description: "Usuário que resgatou Pix. Chave primária."
+        data_tests:
+          - unique
+          - not_null
+      - name: itens_pix
+        description: "Quantidade de itens Pix do usuário."
+      - name: pontos_brutos_pix
+        description: "Pontos brutos somados dos itens Pix do usuário."
+      - name: primeiro_resgate_pix_brt
+        description: "Momento do primeiro item Pix do usuário (horário de Brasília)."
+        data_tests: [not_null]
+      - name: primeiro_envio_brt
+        description: "Primeiro envio da campanha ao usuário (BRT). Nulo se nunca recebeu."
+      - name: primeira_abertura_brt
+        description: "Primeira abertura da campanha pelo usuário (BRT). Nulo se nunca abriu."
+      - name: primeiro_clique_brt
+        description: "Primeiro clique do usuário na campanha (BRT). Nulo se nunca clicou."
+      - name: recebeu_campanha
+        description: "Verdadeiro se há algum envio da campanha ao usuário, antes ou depois do resgate."
+      - name: abriu_campanha
+        description: "Verdadeiro se há alguma abertura da campanha pelo usuário."
+      - name: clicou_campanha
+        description: "Verdadeiro se há algum clique do usuário na campanha."
+      - name: recebeu_antes
+        description: "Verdadeiro se o primeiro envio ocorreu antes do primeiro resgate Pix."
+        data_tests: [not_null]
+      - name: abriu_antes
+        description: "Verdadeiro se a primeira abertura ocorreu antes do primeiro resgate Pix."
+        data_tests: [not_null]
+      - name: clicou_antes
+        description: "Verdadeiro se o primeiro clique ocorreu antes do primeiro resgate Pix."
+        data_tests: [not_null]
+
+  - name: mart_breakage_mensal
+    description: >
+      Movimento de pontos e candidatas a breakage por mês. Grão: 1 linha por mês (horário de Brasília), a partir de
+      stg_points_ledger. Todas as colunas de pontos são positivas. O ledger não tem expiração regular (op 3) e a menor
+      validade de crédito regular é 25/09/2027, depois da extração; as únicas expirações são as de migração (op 103).
+      As colunas bk_* são definições candidatas de breakage, lado a lado, sem eleger uma oficial: sufixo _acum = acumulado
+      até o mês; sem sufixo = só o mês. Não existe definição de breakage nos dados nem no README.
+    columns:
+      - name: mes
+        description: "Mês AAAA-MM (horário de Brasília). Chave primária. Vai de 2025-09 a 2026-09."
+        data_tests: [unique, not_null]
+      - name: pontos_creditados_acumulo
+        description: "Pontos creditados por acúmulo no mês (op 1, CREDITO)."
+      - name: pontos_migrados
+        description: "Pontos creditados por migração do programa anterior no mês (op 100)."
+      - name: pontos_resgatados_brutos
+        description: "Pontos debitados em resgates no mês (op 2), em valor positivo, antes de estornos."
+      - name: pontos_estornados
+        description: "Pontos devolvidos por estorno de pedido no mês (op 14)."
+      - name: pontos_resgatados_liquidos
+        description: "Resgatados brutos menos estornados. A soma de todos os meses é 320.027.439, igual a fct_resgates."
+        data_tests: [not_null]
+      - name: pontos_expirados_regular
+        description: "Pontos expirados (op 3). Sempre zero: não há esse movimento no ledger."
+      - name: pontos_expirados_migracao
+        description: "Pontos expirados da migração no mês (op 103), em valor positivo."
+      - name: pontos_expirados
+        description: "Total expirado no mês (regular mais migração)."
+      - name: variacao_saldo
+        description: "Soma de todos os pontos do ledger no mês (créditos menos débitos)."
+      - name: saldo_acumulado
+        description: "Saldo total de pontos no fim do mês (soma da variação desde o início). No último mês é a soma de todo o ledger."
+        data_tests: [not_null]
+      - name: bk_exp_sobre_creditados
+        description: "Candidata do mês: expirados / creditados por acúmulo."
+      - name: bk_exp_sobre_emitidos
+        description: "Candidata do mês: expirados / (creditados por acúmulo + migrados)."
+      - name: bk_exp_sobre_exp_mais_resg
+        description: "Candidata do mês: expirados / (expirados + resgatados líquidos)."
+      - name: bk_nao_resgatado_sobre_emitidos
+        description: "Candidata do mês: 1 menos resgatados líquidos / (creditados + migrados). Inclui saldo ainda válido, que não é breakage de fato."
+      - name: bk_exp_migracao_sobre_migrados
+        description: "Candidata do mês: expirados da migração / migrados."
+      - name: bk_exp_sobre_creditados_acum
+        description: "Candidata acumulada: expirados / creditados por acúmulo."
+      - name: bk_exp_sobre_emitidos_acum
+        description: "Candidata acumulada: expirados / (creditados por acúmulo + migrados)."
+      - name: bk_exp_sobre_exp_mais_resg_acum
+        description: "Candidata acumulada: expirados / (expirados + resgatados líquidos)."
+      - name: bk_nao_resgatado_sobre_emitidos_acum
+        description: "Candidata acumulada: 1 menos resgatados líquidos / (creditados + migrados). Inclui saldo ainda válido."
+      - name: bk_exp_migracao_sobre_migrados_acum
+        description: "Candidata acumulada: expirados da migração / migrados."
+      - name: bk_saldo_sobre_emitidos_acum
+        description: "Candidata acumulada: saldo acumulado / (creditados + migrados). Inclui saldo ainda válido."
+
+  - name: mart_mix_absoluto_mensal
+    description: >
+      Volume de resgates por mês e tipo. Grão: mês × tipo_resgate, com grade completa (um tipo sem resgate no mês
+      aparece com zero; o Pix tem zero antes de 27/05/2026). Base: fct_resgates (itens APROVADO e ESTORNADO), em
+      horário de Brasília. pontos_liquidos, itens e valor_reais cobrem APROVADO e ESTORNADO (estornados contam 0
+      pontos líquidos). reais_por_ponto considera só itens APROVADO (valor_reais / pontos_brutos) e é nulo quando
+      não há item aprovado.
+    columns:
+      - name: mes
+        description: "Mês AAAA-MM (horário de Brasília). De 2025-10 a 2026-09."
+        data_tests: [not_null]
+      - name: tipo_resgate
+        description: "AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO ou PIX."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO, PIX]
+      - name: pontos_liquidos
+        description: "Pontos líquidos resgatados no mês e tipo (estornos totais contam 0)."
+        data_tests: [not_null]
+      - name: itens
+        description: "Itens de pedido do mês e tipo, APROVADO e ESTORNADO."
+        data_tests: [not_null]
+      - name: valor_reais
+        description: "Valor em reais (R$, product_value) dos itens do mês e tipo, APROVADO e ESTORNADO."
+      - name: reais_por_ponto
+        description: "R$ por ponto dos itens APROVADO (valor_reais / pontos_brutos). No Pix é 0,019. Nulo se não houve item aprovado."
+
+  - name: mart_pre_pos_pix
+    description: >
+      Comparação do volume de resgates antes e depois do Pix. Grão: tipo_resgate × período (PRE ou POS), 8 linhas.
+      PRE = média mensal de 2026-02 a 2026-04 (3 meses); POS = média mensal de 2026-06 a 2026-09 (4 meses). Ficam de
+      fora janeiro/2026 (outlier: 96,8% de aéreas) e maio/2026 (mês do lançamento do Pix em 27/05). A variação só é
+      preenchida nas linhas POS. É uma comparação descritiva de médias, não estima o efeito causal do Pix.
+    columns:
+      - name: tipo_resgate
+        description: "AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO ou PIX."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO, PIX]
+      - name: periodo
+        description: "PRE (2026-02 a 2026-04) ou POS (2026-06 a 2026-09)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [PRE, POS]
+      - name: meses_no_periodo
+        description: "Quantidade de meses usada na média (3 no PRE e 4 no POS)."
+        data_tests: [not_null]
+      - name: media_mensal_pontos_liquidos
+        description: "Média mensal de pontos líquidos do tipo no período."
+        data_tests: [not_null]
+      - name: variacao_absoluta
+        description: "Média POS menos média PRE, em pontos por mês. Só nas linhas POS; nulo no PRE."
+      - name: variacao_pct
+        description: "(média POS − média PRE) / média PRE, em fração (0,10 = +10%). Só nas linhas POS. Nulo no Pix, onde a média PRE é zero."
+
+  - name: mart_cenarios_meta
+    description: >
+      Cenários das metas de aéreas e varejo. Grão: mês (2026-06 a 2026-09) × cenário. REAL repete mart_metas_mensal.
+      SEM_PIX é um cálculo aritmético: retira os pontos Pix do total do mês e mantém todo o resto igual. NÃO assume que
+      o cliente trocaria os pontos por outro tipo de resgate nem que o volume total se manteria; mostra apenas como os
+      percentuais ficariam sem os pontos Pix. pontos_varejo_adicionais_* usa (0,2 × total − varejo) / 0,8, que são os
+      pontos de varejo que precisariam ser somados ao total para o varejo chegar a 20% (limitado a zero quando a meta
+      já é atendida). Varejo estrito = só produtos; varejo amplo = produtos mais transferências a parceiros.
+    columns:
+      - name: mes
+        description: "Mês AAAA-MM (horário de Brasília), de 2026-06 a 2026-09."
+        data_tests: [not_null]
+      - name: cenario
+        description: "REAL (pontos como ocorreram) ou SEM_PIX (pontos Pix removidos do total, resto igual)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [REAL, SEM_PIX]
+      - name: pontos_liquidos_total
+        description: "Total de pontos líquidos do cenário. No SEM_PIX é o total real menos os pontos Pix."
+        data_tests: [not_null]
+      - name: pontos_aereo
+        description: "Pontos líquidos em aéreas (igual nos dois cenários)."
+      - name: pontos_varejo_estrito
+        description: "Pontos líquidos em produtos de varejo."
+      - name: pontos_varejo_amplo
+        description: "Pontos líquidos em produtos mais transferências a parceiros."
+      - name: pct_aereo
+        description: "Fração (0 a 1) de aéreas sobre o total do cenário."
+      - name: pct_varejo_estrito
+        description: "Fração (0 a 1) de varejo estrito sobre o total do cenário."
+      - name: pct_varejo_amplo
+        description: "Fração (0 a 1) de varejo amplo sobre o total do cenário."
+      - name: atende_meta_aereo
+        description: "Verdadeiro se pct_aereo >= 0,50."
+      - name: atende_meta_varejo_estrito
+        description: "Verdadeiro se pct_varejo_estrito >= 0,20."
+      - name: atende_meta_varejo_amplo
+        description: "Verdadeiro se pct_varejo_amplo >= 0,20."
+      - name: pontos_varejo_adicionais_estrito
+        description: "Pontos de varejo estrito a acrescentar para chegar a 20%: (0,2 × total − varejo estrito) / 0,8, mínimo zero."
+      - name: pontos_varejo_adicionais_amplo
+        description: "Pontos de varejo amplo a acrescentar para chegar a 20%: (0,2 × total − varejo amplo) / 0,8, mínimo zero."
+
+  - name: mart_pix_adesao_campanha
+    description: >
+      Adesão ao Pix por exposição à campanha de lançamento. Grão: grupo (RECEBEU_CMP_LANCAMENTO_PIX ou NAO_RECEBEU).
+      Universo: usuários com pelo menos 1 resgate de qualquer tipo (linhas de fct_resgates) entre 01/04 e 30/09/2026.
+      Recebeu = há envio da campanha CMP_LANCAMENTO_PIX ao usuário, em qualquer data. É uma comparação observacional:
+      não há grupo de controle (control_group vazio) e há viés de seleção (a campanha não foi enviada a uma amostra
+      aleatória, e o universo só tem quem resgatou algo). Não permite concluir que a campanha causou a adesão.
+    columns:
+      - name: grupo
+        description: "RECEBEU_CMP_LANCAMENTO_PIX ou NAO_RECEBEU. Chave primária."
+        data_tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [RECEBEU_CMP_LANCAMENTO_PIX, NAO_RECEBEU]
+      - name: usuarios
+        description: "Usuários do universo no grupo."
+        data_tests: [not_null]
+      - name: usuarios_resgataram_pix
+        description: "Usuários do grupo com pelo menos 1 resgate Pix no período."
+      - name: pct_resgataram_pix
+        description: "usuarios_resgataram_pix / usuarios, em fração (0 a 1)."
+        data_tests: [not_null]

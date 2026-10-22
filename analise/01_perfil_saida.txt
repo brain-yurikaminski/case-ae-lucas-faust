@@ -1,0 +1,941 @@
+
+====================================================================================================
+0. CARGA E CONFERÊNCIA COM MANIFESTO_v1.csv
+====================================================================================================
+arquivo | linhas_manifesto | linhas_lidas | sha256_confere
+cards.csv | 16168 | 16168 | True
+carts.csv | 19785 | 19785 | True
+crm_events.csv | 348250 | 348250 | True
+dim_operation.csv | 7 | 7 | True
+order_items.csv | 19803 | 19803 | True
+orders.csv | 19785 | 19785 | True
+points_ledger.csv | 146739 | 146739 | True
+redeemed_points.csv | 29838 | 29838 | True
+relatorio_mensal_cliente.csv | 9 | 9 | True
+
+====================================================================================================
+1. PERFIL POR COLUNA (tipo inferido, % nulos, % vazios, distintos)
+====================================================================================================
+
+--- orders: colunas
+SQL: select 'order_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "order_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "order_id" <> '' and trim("order_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("order_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("order_id", '')) distintos_nao_vazios from raw_orders union all select 'cart_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "cart_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "cart_id" <> '' and trim("cart_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("cart_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("cart_id", '')) distintos_nao_vazios from raw_orders union all select 'user_id' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "user_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "user_id" <> '' and trim("user_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("user_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("user_id", '')) distintos_nao_vazios from raw_orders union all select 'created_at' coluna, 'TIMESTAMP WITH TIME ZONE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "created_at" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "created_at" <> '' and trim("created_at") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("created_at") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("created_at", '')) distintos_nao_vazios from raw_orders union all select 'status' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "status" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "status" <> '' and trim("status") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("status") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("status", '')) distintos_nao_vazios from raw_orders union all select 'status_updated_at' coluna, 'TIMESTAMP WITH TIME ZONE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "status_updated_at" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "status_updated_at" <> '' and trim("status_updated_at") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("status_updated_at") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("status_updated_at", '')) distintos_nao_vazios from raw_orders order by 1
+coluna            | tipo_inferido            | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+------------------+--------------------------+--------+--------------------------+----------------+----------------+---------------------
+cart_id           | BIGINT                   | 19785  | 0.0                      | 0.0            | 0.0            | 19785               
+created_at        | TIMESTAMP WITH TIME ZONE | 19785  | 0.0                      | 0.0            | 0.0            | 19606               
+order_id          | BIGINT                   | 19785  | 0.0                      | 0.0            | 0.0            | 19785               
+status            | VARCHAR                  | 19785  | 0.0                      | 0.0            | 0.0            | 6                   
+status_updated_at | TIMESTAMP WITH TIME ZONE | 19785  | 0.0                      | 0.0            | 0.0            | 19734               
+user_id           | VARCHAR                  | 19785  | 100.0                    | 0.0            | 0.0            | 0                   
+
+--- order_items: colunas
+SQL: select 'order_item_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "order_item_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "order_item_id" <> '' and trim("order_item_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("order_item_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("order_item_id", '')) distintos_nao_vazios from raw_order_items union all select 'order_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "order_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "order_id" <> '' and trim("order_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("order_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("order_id", '')) distintos_nao_vazios from raw_order_items union all select 'created_at' coluna, 'TIMESTAMP WITH TIME ZONE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "created_at" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "created_at" <> '' and trim("created_at") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("created_at") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("created_at", '')) distintos_nao_vazios from raw_order_items union all select 'status' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "status" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "status" <> '' and trim("status") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("status") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("status", '')) distintos_nao_vazios from raw_order_items union all select 'product_type' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "product_type" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "product_type" <> '' and trim("product_type") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("product_type") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("product_type", '')) distintos_nao_vazios from raw_order_items union all select 'supplier_name' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "supplier_name" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "supplier_name" <> '' and trim("supplier_name") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("supplier_name") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("supplier_name", '')) distintos_nao_vazios from raw_order_items union all select 'supplier_responsible' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "supplier_responsible" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "supplier_responsible" <> '' and trim("supplier_responsible") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("supplier_responsible") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("supplier_responsible", '')) distintos_nao_vazios from raw_order_items union all select 'category_macro' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "category_macro" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "category_macro" <> '' and trim("category_macro") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("category_macro") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("category_macro", '')) distintos_nao_vazios from raw_order_items union all select 'paid_points' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "paid_points" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "paid_points" <> '' and trim("paid_points") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("paid_points") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("paid_points", '')) distintos_nao_vazios from raw_order_items union all select 'paid_currency' coluna, 'DOUBLE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "paid_currency" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "paid_currency" <> '' and trim("paid_currency") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("paid_currency") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("paid_currency", '')) distintos_nao_vazios from raw_order_items union all select 'product_value' coluna, 'DOUBLE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "product_value" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "product_value" <> '' and trim("product_value") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("product_value") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("product_value", '')) distintos_nao_vazios from raw_order_items union all select 'refunded_points' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "refunded_points" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "refunded_points" <> '' and trim("refunded_points") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("refunded_points") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("refunded_points", '')) distintos_nao_vazios from raw_order_items union all select 'quantity' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "quantity" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "quantity" <> '' and trim("quantity") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("quantity") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("quantity", '')) distintos_nao_vazios from raw_order_items order by 1
+coluna               | tipo_inferido            | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+---------------------+--------------------------+--------+--------------------------+----------------+----------------+---------------------
+category_macro       | VARCHAR                  | 19803  | 0.0                      | 0.0            | 0.0            | 3                   
+created_at           | TIMESTAMP WITH TIME ZONE | 19803  | 0.0                      | 0.0            | 0.0            | 19606               
+order_id             | BIGINT                   | 19803  | 0.0                      | 0.0            | 0.0            | 19785               
+order_item_id        | BIGINT                   | 19803  | 0.0                      | 0.0            | 0.0            | 19803               
+paid_currency        | DOUBLE                   | 19803  | 0.0                      | 0.0            | 0.0            | 2670                
+paid_points          | BIGINT                   | 19803  | 2.63                     | 0.0            | 0.0            | 7619                
+product_type         | VARCHAR                  | 19803  | 0.0                      | 0.0            | 0.0            | 4                   
+product_value        | DOUBLE                   | 19803  | 0.0                      | 0.0            | 0.0            | 15754               
+quantity             | BIGINT                   | 19803  | 0.0                      | 0.0            | 0.0            | 1                   
+refunded_points      | BIGINT                   | 19803  | 0.0                      | 0.0            | 0.0            | 103                 
+status               | VARCHAR                  | 19803  | 0.0                      | 0.0            | 0.0            | 6                   
+supplier_name        | VARCHAR                  | 19803  | 0.0                      | 0.0            | 0.0            | 12                  
+supplier_responsible | VARCHAR                  | 19803  | 0.0                      | 0.0            | 0.0            | 11                  
+
+--- carts: colunas
+SQL: select 'cart_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "cart_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "cart_id" <> '' and trim("cart_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("cart_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("cart_id", '')) distintos_nao_vazios from raw_carts union all select 'user_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "user_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "user_id" <> '' and trim("user_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("user_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("user_id", '')) distintos_nao_vazios from raw_carts union all select 'channel' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "channel" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "channel" <> '' and trim("channel") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("channel") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("channel", '')) distintos_nao_vazios from raw_carts order by 1
+coluna  | tipo_inferido | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+--------+---------------+--------+--------------------------+----------------+----------------+---------------------
+cart_id | BIGINT        | 19785  | 0.0                      | 0.0            | 0.0            | 19785               
+channel | VARCHAR       | 19785  | 0.0                      | 0.0            | 0.0            | 2                   
+user_id | BIGINT        | 19785  | 0.0                      | 0.0            | 0.0            | 6325                
+
+--- points_ledger: colunas
+SQL: select 'movement_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "movement_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "movement_id" <> '' and trim("movement_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("movement_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("movement_id", '')) distintos_nao_vazios from raw_points_ledger union all select 'user_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "user_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "user_id" <> '' and trim("user_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("user_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("user_id", '')) distintos_nao_vazios from raw_points_ledger union all select 'account_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "account_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "account_id" <> '' and trim("account_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("account_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("account_id", '')) distintos_nao_vazios from raw_points_ledger union all select 'operation_code' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "operation_code" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "operation_code" <> '' and trim("operation_code") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("operation_code") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("operation_code", '')) distintos_nao_vazios from raw_points_ledger union all select 'points' coluna, 'DOUBLE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "points" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "points" <> '' and trim("points") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("points") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("points", '')) distintos_nao_vazios from raw_points_ledger union all select 'movement_at' coluna, 'TIMESTAMP WITH TIME ZONE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "movement_at" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "movement_at" <> '' and trim("movement_at") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("movement_at") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("movement_at", '')) distintos_nao_vazios from raw_points_ledger union all select 'valid_until' coluna, 'DATE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "valid_until" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "valid_until" <> '' and trim("valid_until") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("valid_until") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("valid_until", '')) distintos_nao_vazios from raw_points_ledger order by 1
+coluna         | tipo_inferido            | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+---------------+--------------------------+--------+--------------------------+----------------+----------------+---------------------
+account_id     | BIGINT                   | 146739 | 0.0                      | 0.0            | 0.0            | 15954               
+movement_at    | TIMESTAMP WITH TIME ZONE | 146739 | 0.0                      | 0.0            | 0.0            | 143597              
+movement_id    | BIGINT                   | 146739 | 0.0                      | 0.0            | 0.0            | 146739              
+operation_code | BIGINT                   | 146739 | 0.0                      | 0.0            | 0.0            | 5                   
+points         | DOUBLE                   | 146739 | 0.0                      | 0.0            | 0.0            | 33113               
+user_id        | BIGINT                   | 146739 | 0.0                      | 0.0            | 0.0            | 11881               
+valid_until    | DATE                     | 146739 | 26.3                     | 0.0            | 0.0            | 371                 
+
+--- dim_operation: colunas
+SQL: select 'operation_code' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "operation_code" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "operation_code" <> '' and trim("operation_code") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("operation_code") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("operation_code", '')) distintos_nao_vazios from raw_dim_operation union all select 'operation_name' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "operation_name" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "operation_name" <> '' and trim("operation_name") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("operation_name") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("operation_name", '')) distintos_nao_vazios from raw_dim_operation union all select 'direction' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "direction" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "direction" <> '' and trim("direction") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("direction") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("direction", '')) distintos_nao_vazios from raw_dim_operation order by 1
+coluna         | tipo_inferido | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+---------------+---------------+--------+--------------------------+----------------+----------------+---------------------
+direction      | VARCHAR       | 7      | 0.0                      | 0.0            | 0.0            | 2                   
+operation_code | BIGINT        | 7      | 0.0                      | 0.0            | 0.0            | 7                   
+operation_name | VARCHAR       | 7      | 0.0                      | 0.0            | 0.0            | 7                   
+
+--- cards: colunas
+SQL: select 'account_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "account_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "account_id" <> '' and trim("account_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("account_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("account_id", '')) distintos_nao_vazios from raw_cards union all select 'user_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "user_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "user_id" <> '' and trim("user_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("user_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("user_id", '')) distintos_nao_vazios from raw_cards union all select 'card_class' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "card_class" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "card_class" <> '' and trim("card_class") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("card_class") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("card_class", '')) distintos_nao_vazios from raw_cards union all select 'card_flag' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "card_flag" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "card_flag" <> '' and trim("card_flag") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("card_flag") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("card_flag", '')) distintos_nao_vazios from raw_cards union all select 'created_at' coluna, 'TIMESTAMP WITH TIME ZONE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "created_at" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "created_at" <> '' and trim("created_at") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("created_at") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("created_at", '')) distintos_nao_vazios from raw_cards union all select 'is_most_recent' coluna, 'BOOLEAN' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "is_most_recent" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "is_most_recent" <> '' and trim("is_most_recent") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("is_most_recent") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("is_most_recent", '')) distintos_nao_vazios from raw_cards order by 1
+coluna         | tipo_inferido            | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+---------------+--------------------------+--------+--------------------------+----------------+----------------+---------------------
+account_id     | BIGINT                   | 16168  | 0.0                      | 0.0            | 0.0            | 16168               
+card_class     | VARCHAR                  | 16168  | 0.0                      | 0.0            | 0.0            | 6                   
+card_flag      | VARCHAR                  | 16168  | 0.0                      | 0.0            | 0.0            | 3                   
+created_at     | TIMESTAMP WITH TIME ZONE | 16168  | 0.0                      | 0.0            | 0.0            | 4805                
+is_most_recent | BOOLEAN                  | 16168  | 0.0                      | 0.0            | 0.0            | 2                   
+user_id        | BIGINT                   | 16168  | 0.0                      | 0.0            | 0.0            | 12000               
+
+--- redeemed_points: colunas
+SQL: select 'order_item_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "order_item_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "order_item_id" <> '' and trim("order_item_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("order_item_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("order_item_id", '')) distintos_nao_vazios from raw_redeemed_points union all select 'account_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "account_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "account_id" <> '' and trim("account_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("account_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("account_id", '')) distintos_nao_vazios from raw_redeemed_points union all select 'movement_type' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "movement_type" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "movement_type" <> '' and trim("movement_type") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("movement_type") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("movement_type", '')) distintos_nao_vazios from raw_redeemed_points union all select 'points' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "points" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "points" <> '' and trim("points") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("points") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("points", '')) distintos_nao_vazios from raw_redeemed_points order by 1
+coluna        | tipo_inferido | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+--------------+---------------+--------+--------------------------+----------------+----------------+---------------------
+account_id    | BIGINT        | 29838  | 0.0                      | 0.0            | 0.0            | 7467                
+movement_type | VARCHAR       | 29838  | 0.0                      | 0.0            | 0.0            | 3                   
+order_item_id | BIGINT        | 29838  | 0.0                      | 0.0            | 0.0            | 17823               
+points        | BIGINT        | 29838  | 0.0                      | 0.0            | 0.0            | 11522               
+
+--- crm_events: colunas
+SQL: select 'event_ts' coluna, 'TIMESTAMP' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "event_ts" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "event_ts" <> '' and trim("event_ts") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("event_ts") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("event_ts", '')) distintos_nao_vazios from raw_crm_events union all select 'user_id' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "user_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "user_id" <> '' and trim("user_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("user_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("user_id", '')) distintos_nao_vazios from raw_crm_events union all select 'device_id' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "device_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "device_id" <> '' and trim("device_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("device_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("device_id", '')) distintos_nao_vazios from raw_crm_events union all select 'event_name' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "event_name" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "event_name" <> '' and trim("event_name") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("event_name") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("event_name", '')) distintos_nao_vazios from raw_crm_events union all select 'campaign_type' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "campaign_type" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "campaign_type" <> '' and trim("campaign_type") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("campaign_type") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("campaign_type", '')) distintos_nao_vazios from raw_crm_events union all select 'campaign_id' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "campaign_id" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "campaign_id" <> '' and trim("campaign_id") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("campaign_id") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("campaign_id", '')) distintos_nao_vazios from raw_crm_events union all select 'control_group' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "control_group" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "control_group" <> '' and trim("control_group") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("control_group") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("control_group", '')) distintos_nao_vazios from raw_crm_events union all select 'event_properties' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "event_properties" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "event_properties" <> '' and trim("event_properties") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("event_properties") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("event_properties", '')) distintos_nao_vazios from raw_crm_events order by 1
+coluna           | tipo_inferido | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+-----------------+---------------+--------+--------------------------+----------------+----------------+---------------------
+campaign_id      | VARCHAR       | 348250 | 5.02                     | 0.0            | 0.0            | 127                 
+campaign_type    | VARCHAR       | 348250 | 5.02                     | 0.0            | 0.0            | 6                   
+control_group    | VARCHAR       | 348250 | 100.0                    | 0.0            | 0.0            | 0                   
+device_id        | VARCHAR       | 348250 | 0.0                      | 0.0            | 0.0            | 12000               
+event_name       | VARCHAR       | 348250 | 0.0                      | 0.0            | 0.0            | 6                   
+event_properties | VARCHAR       | 348250 | 0.0                      | 0.0            | 0.0            | 626                 
+event_ts         | TIMESTAMP     | 348250 | 0.0                      | 0.0            | 0.0            | 289150              
+user_id          | BIGINT        | 348250 | 5.82                     | 0.0            | 0.0            | 12000               
+
+--- relatorio_mensal_cliente: colunas
+SQL: select 'mes' coluna, 'VARCHAR' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "mes" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "mes" <> '' and trim("mes") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("mes") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("mes", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente union all select 'aereas_pct' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "aereas_pct" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "aereas_pct" <> '' and trim("aereas_pct") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("aereas_pct") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("aereas_pct", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente union all select 'varejo_pct' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "varejo_pct" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "varejo_pct" <> '' and trim("varejo_pct") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("varejo_pct") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("varejo_pct", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente union all select 'pix_pct' coluna, 'DOUBLE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "pix_pct" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "pix_pct" <> '' and trim("pix_pct") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("pix_pct") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("pix_pct", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente union all select 'pix_reais' coluna, 'DOUBLE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "pix_reais" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "pix_reais" <> '' and trim("pix_reais") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("pix_reais") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("pix_reais", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente union all select 'pix_pontos' coluna, 'DOUBLE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "pix_pontos" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "pix_pontos" <> '' and trim("pix_pontos") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("pix_pontos") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("pix_pontos", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente union all select 'pix_transacoes' coluna, 'DOUBLE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "pix_transacoes" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "pix_transacoes" <> '' and trim("pix_transacoes") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("pix_transacoes") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("pix_transacoes", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente union all select 'emails_enviados' coluna, 'BIGINT' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "emails_enviados" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "emails_enviados" <> '' and trim("emails_enviados") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("emails_enviados") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("emails_enviados", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente union all select 'push_enviados' coluna, 'DOUBLE' tipo_inferido, count(*) linhas, round(100.0 * count(*) filter (where "push_enviados" = '') / count(*), 2) pct_vazio_lido_como_nulo, round(100.0 * count(*) filter (where "push_enviados" <> '' and trim("push_enviados") = '') / count(*), 2) pct_so_espacos, round(100.0 * count(*) filter (where trim("push_enviados") in ('null', 'NULL', 'None', 'NaN', 'nan')) / count(*), 2) pct_texto_nulo, count(distinct nullif("push_enviados", '')) distintos_nao_vazios from raw_relatorio_mensal_cliente order by 1
+coluna          | tipo_inferido | linhas | pct_vazio_lido_como_nulo | pct_so_espacos | pct_texto_nulo | distintos_nao_vazios
+----------------+---------------+--------+--------------------------+----------------+----------------+---------------------
+aereas_pct      | BIGINT        | 9      | 0.0                      | 0.0            | 0.0            | 8                   
+emails_enviados | BIGINT        | 9      | 0.0                      | 0.0            | 0.0            | 9                   
+mes             | VARCHAR       | 9      | 0.0                      | 0.0            | 0.0            | 9                   
+pix_pct         | DOUBLE        | 9      | 44.44                    | 0.0            | 0.0            | 5                   
+pix_pontos      | DOUBLE        | 9      | 44.44                    | 0.0            | 0.0            | 5                   
+pix_reais       | DOUBLE        | 9      | 44.44                    | 0.0            | 0.0            | 5                   
+pix_transacoes  | DOUBLE        | 9      | 44.44                    | 0.0            | 0.0            | 5                   
+push_enviados   | DOUBLE        | 9      | 33.33                    | 0.0            | 0.0            | 6                   
+varejo_pct      | BIGINT        | 9      | 0.0                      | 0.0            | 0.0            | 6                   
+
+====================================================================================================
+2. GRÃO E CHAVES CANDIDATAS (teste de unicidade)
+====================================================================================================
+
+--- orders: order_id e cart_id únicos?
+SQL: select count(*) linhas, count(distinct order_id) d_order_id, count(distinct cart_id) d_cart_id from orders
+linhas | d_order_id | d_cart_id
+-------+------------+----------
+19785  | 19785      | 19785    
+
+--- order_items: order_item_id único? itens por pedido
+SQL: select count(*) linhas, count(distinct order_item_id) d_order_item_id, count(distinct order_id) d_order_id from order_items
+linhas | d_order_item_id | d_order_id
+-------+-----------------+-----------
+19803  | 19803           | 19785     
+
+--- order_items: distribuição de itens por pedido
+SQL: select n_itens, count(*) pedidos from (select order_id, count(*) n_itens from order_items group by 1) group by 1 order by 1
+n_itens | pedidos
+--------+--------
+1       | 19767  
+2       | 18     
+
+--- carts: cart_id único?
+SQL: select count(*) linhas, count(distinct cart_id) d_cart_id, count(distinct user_id) d_user_id from carts
+linhas | d_cart_id | d_user_id
+-------+-----------+----------
+19785  | 19785     | 6325     
+
+--- points_ledger: movement_id único?
+SQL: select count(*) linhas, count(distinct movement_id) d_movement_id, count(distinct user_id) d_user, count(distinct account_id) d_account from points_ledger
+linhas | d_movement_id | d_user | d_account
+-------+---------------+--------+----------
+146739 | 146739        | 11881  | 15954    
+
+--- dim_operation: operation_code único?
+SQL: select count(*) linhas, count(distinct operation_code) d_code from dim_operation
+linhas | d_code
+-------+-------
+7      | 7     
+
+--- cards: account_id único? cartões por usuário
+SQL: select count(*) linhas, count(distinct account_id) d_account_id, count(distinct user_id) d_user_id from cards
+linhas | d_account_id | d_user_id
+-------+--------------+----------
+16168  | 16168        | 12000    
+
+--- redeemed_points: quais combinações são únicas?
+SQL: select count(*) linhas, count(distinct order_item_id) d_item, count(distinct (order_item_id, movement_type)) d_item_tipo, count(distinct (order_item_id, account_id, movement_type)) d_item_conta_tipo, count(distinct (order_item_id, account_id, movement_type, points)) d_linha_inteira from redeemed_points
+linhas | d_item | d_item_tipo | d_item_conta_tipo | d_linha_inteira
+-------+--------+-------------+-------------------+----------------
+29838  | 17823  | 28367       | 29838             | 29838          
+
+--- redeemed_points: padrões de movimentos por item
+SQL: select movimentos, count(*) itens from ( select order_item_id, string_agg(movement_type, '+' order by movement_type) movimentos from redeemed_points group by 1) group by 1 order by 2 desc
+movimentos                                | itens
+------------------------------------------+------
+RESGATE                                   | 11537
+CANCELADO_RESERVA+RESERVA+RESGATE         | 4815 
+RESGATE+RESGATE                           | 1014 
+CANCELADO_RESERVA+RESERVA+RESGATE+RESGATE | 457  
+
+--- redeemed_points: exemplo de item com 2 RESGATE (contas diferentes)
+SQL: select order_item_id, account_id, movement_type, points from redeemed_points where order_item_id = (select order_item_id from redeemed_points where movement_type = 'RESGATE' group by 1 having count(*) > 1 order by 1 limit 1) order by movement_type, account_id
+order_item_id | account_id   | movement_type     | points
+--------------+--------------+-------------------+-------
+100203359246  | 923477511976 | CANCELADO_RESERVA | 88200 
+100203359246  | 923477511976 | RESERVA           | -88200
+100203359246  | 492220844232 | RESGATE           | -26993
+100203359246  | 923477511976 | RESGATE           | -61207
+
+--- crm_events: há linhas 100% duplicadas? (não há chave natural)
+SQL: select count(*) linhas, count(distinct (event_ts, user_id, device_id, event_name, campaign_type, campaign_id, event_properties)) d_linha_inteira from crm_events
+linhas | d_linha_inteira
+-------+----------------
+348250 | 348250         
+
+--- crm_events: device_id x user_id
+SQL: select count(distinct device_id) d_device, count(distinct user_id) d_user, (select count(*) from (select user_id from crm_events where user_id is not null group by 1 having count(distinct device_id) > 1)) users_com_mais_de_1_device, (select count(*) from (select device_id from crm_events where user_id is not null group by 1 having count(distinct user_id) > 1)) devices_com_mais_de_1_user from crm_events
+d_device | d_user | users_com_mais_de_1_device | devices_com_mais_de_1_user
+---------+--------+----------------------------+---------------------------
+12000    | 12000  | 0                          | 0                         
+
+--- relatorio_mensal_cliente: mes único?
+SQL: select count(*) linhas, count(distinct mes) d_mes from relatorio_mensal_cliente
+linhas | d_mes
+-------+------
+9      | 9    
+
+====================================================================================================
+3. VALORES DISTINTOS DAS CATEGÓRICAS
+====================================================================================================
+
+--- orders.status
+SQL: select status, count(*) n from orders group by 1 order by 2 desc
+status                 | n    
+-----------------------+------
+APROVADO               | 17587
+CANCELADO              | 1399 
+FINALIZADO_COM_SUCESSO | 374  
+ESTORNADO              | 219  
+INVALIDO               | 159  
+AGUARDANDO_CONFIRMACAO | 47   
+
+--- order_items.status
+SQL: select status, count(*) n from order_items group by 1 order by 2 desc
+status                 | n    
+-----------------------+------
+APROVADO               | 17603
+CANCELADO              | 1400 
+FINALIZADO_COM_SUCESSO | 374  
+ESTORNADO              | 220  
+INVALIDO               | 159  
+AGUARDANDO_CONFIRMACAO | 47   
+
+--- order_items.product_type
+SQL: select product_type, count(*) n from order_items group by 1 order by 2 desc
+product_type  | n   
+--------------+-----
+PASSAGEM      | 9057
+PRODUTO       | 5353
+TRANSFERENCIA | 4873
+COMPRA_PONTOS | 520 
+
+--- order_items.category_macro
+SQL: select category_macro, count(*) n from order_items group by 1 order by 2 desc
+category_macro | n   
+---------------+-----
+Aereas         | 9057
+Varejo         | 6934
+Cashback       | 3812
+
+--- order_items.supplier_name
+SQL: select supplier_name, count(*) n from order_items group by 1 order by 2 desc
+supplier_name               | n   
+----------------------------+-----
+Voa Linhas Aereas           | 4494
+Pix Pontua+                 | 3292
+Ceu Azul Milhas             | 2746
+RotaSul Aerea               | 1817
+Casa&Cia                    | 1584
+MegaMagazine                | 1565
+Decola Viagens              | 1307
+Nuvem Recompensas           | 944 
+Loja Tech10                 | 758 
+Pontos Max                  | 637 
+Compra Pontos Pontua+       | 520 
+Casa&Cia (via MegaMagazine) | 139 
+
+--- order_items.supplier_responsible
+SQL: select supplier_responsible, count(*) n from order_items group by 1 order by 2 desc
+supplier_responsible  | n   
+----------------------+-----
+Voa Linhas Aereas     | 4494
+Pix Pontua+           | 3292
+Ceu Azul Milhas       | 2746
+RotaSul Aerea         | 1817
+MegaMagazine          | 1704
+Casa&Cia              | 1584
+Decola Viagens        | 1307
+Nuvem Recompensas     | 944 
+Loja Tech10           | 758 
+Pontos Max            | 637 
+Compra Pontos Pontua+ | 520 
+
+--- order_items.quantity
+SQL: select quantity, count(*) n from order_items group by 1 order by 2 desc
+quantity | n    
+---------+------
+1        | 19803
+
+--- carts.channel
+SQL: select channel, count(*) n from carts group by 1 order by 2 desc
+channel | n    
+--------+------
+APP     | 12791
+WEB     | 6994 
+
+--- points_ledger.operation_code
+SQL: select operation_code, count(*) n from points_ledger group by 1 order by 2 desc
+operation_code | n     
+---------------+-------
+1              | 101593
+103            | 20449 
+2              | 17823 
+100            | 6551  
+14             | 323   
+
+--- cards.card_class
+SQL: select card_class, count(*) n from cards group by 1 order by 2 desc
+card_class   | n   
+-------------+-----
+Essencial    | 6341
+Gold         | 4154
+Platinum     | 2445
+Platinum Elo | 1275
+Infinite     | 1131
+Black        | 822 
+
+--- cards.card_flag
+SQL: select card_flag, count(*) n from cards group by 1 order by 2 desc
+card_flag  | n   
+-----------+-----
+VISA       | 6927
+MASTERCARD | 6624
+ELO        | 2617
+
+--- cards.is_most_recent
+SQL: select is_most_recent, count(*) n from cards group by 1 order by 2 desc
+is_most_recent | n    
+---------------+------
+True           | 12000
+False          | 4168 
+
+--- redeemed_points.movement_type
+SQL: select movement_type, count(*) n from redeemed_points group by 1 order by 2 desc
+movement_type     | n    
+------------------+------
+RESGATE           | 19294
+CANCELADO_RESERVA | 5272 
+RESERVA           | 5272 
+
+--- crm_events.event_name
+SQL: select event_name, count(*) n from crm_events group by 1 order by 2 desc
+event_name           | n     
+---------------------+-------
+Notification Sent    | 228820
+Notification Viewed  | 55976 
+Push Impressions     | 32025 
+Order Approved       | 17494 
+Notification Clicked | 8121  
+Notification Failed  | 5814  
+
+--- crm_events.campaign_type
+SQL: select campaign_type, count(*) n from crm_events group by 1 order by 2 desc
+campaign_type         | n     
+----------------------+-------
+Email                 | 199660
+Mobile Push - Android | 37567 
+Push                  | 34335 
+Facebook Audiences    | 27000 
+Mobile Push - iOS     | 20516 
+                      | 17494 
+InApp                 | 11678 
+
+--- crm_events.control_group
+SQL: select control_group, count(*) n from crm_events group by 1 order by 2 desc
+control_group | n     
+--------------+-------
+              | 348250
+
+--- dim_operation completa
+SQL: select * from dim_operation order by 1
+operation_code | operation_name     | direction
+---------------+--------------------+----------
+1              | CREDITO            | CREDIT   
+2              | RESGATE            | DEBIT    
+3              | EXPIRACAO          | DEBIT    
+13             | ESTORNO_CREDITO    | DEBIT    
+14             | ESTORNO_PEDIDO     | CREDIT   
+100            | CREDITO_MIGRACAO   | CREDIT   
+103            | EXPIRACAO_MIGRACAO | DEBIT    
+
+--- order_items: product_type x category_macro x fornecedor
+SQL: select product_type, category_macro, supplier_name, supplier_responsible, count(*) itens, count(paid_points) com_paid_points, min(created_at)::date primeiro, max(created_at)::date ultimo from order_items group by all order by 1, 2, 3
+product_type  | category_macro | supplier_name               | supplier_responsible  | itens | com_paid_points | primeiro   | ultimo    
+--------------+----------------+-----------------------------+-----------------------+-------+-----------------+------------+-----------
+COMPRA_PONTOS | Cashback       | Compra Pontos Pontua+       | Compra Pontos Pontua+ | 520   | 0               | 2025-11-02 | 2026-09-27
+PASSAGEM      | Aereas         | Ceu Azul Milhas             | Ceu Azul Milhas       | 2746  | 2746            | 2025-10-01 | 2026-09-30
+PASSAGEM      | Aereas         | RotaSul Aerea               | RotaSul Aerea         | 1817  | 1817            | 2025-10-02 | 2026-09-30
+PASSAGEM      | Aereas         | Voa Linhas Aereas           | Voa Linhas Aereas     | 4494  | 4494            | 2025-10-01 | 2026-09-30
+PRODUTO       | Varejo         | Casa&Cia                    | Casa&Cia              | 1584  | 1584            | 2025-10-01 | 2026-09-09
+PRODUTO       | Varejo         | Casa&Cia (via MegaMagazine) | MegaMagazine          | 139   | 139             | 2026-09-10 | 2026-09-30
+PRODUTO       | Varejo         | Decola Viagens              | Decola Viagens        | 1307  | 1307            | 2025-10-01 | 2026-09-30
+PRODUTO       | Varejo         | Loja Tech10                 | Loja Tech10           | 758   | 758             | 2025-10-01 | 2026-09-30
+PRODUTO       | Varejo         | MegaMagazine                | MegaMagazine          | 1565  | 1565            | 2025-10-01 | 2026-09-30
+TRANSFERENCIA | Cashback       | Pix Pontua+                 | Pix Pontua+           | 3292  | 3292            | 2026-05-27 | 2026-09-30
+TRANSFERENCIA | Varejo         | Nuvem Recompensas           | Nuvem Recompensas     | 944   | 944             | 2025-10-01 | 2026-09-29
+TRANSFERENCIA | Varejo         | Pontos Max                  | Pontos Max            | 637   | 637             | 2025-10-02 | 2026-09-29
+
+--- orders.status x order_items.status (divergências)
+SQL: select o.status status_pedido, i.status status_item, count(*) itens from orders o join order_items i using (order_id) group by all order by 3 desc
+status_pedido          | status_item            | itens
+-----------------------+------------------------+------
+APROVADO               | APROVADO               | 17601
+CANCELADO              | CANCELADO              | 1399 
+FINALIZADO_COM_SUCESSO | FINALIZADO_COM_SUCESSO | 374  
+ESTORNADO              | ESTORNADO              | 219  
+INVALIDO               | INVALIDO               | 159  
+AGUARDANDO_CONFIRMACAO | AGUARDANDO_CONFIRMACAO | 47   
+CANCELADO              | APROVADO               | 2    
+APROVADO               | CANCELADO              | 1    
+APROVADO               | ESTORNADO              | 1    
+
+====================================================================================================
+4. FORMATOS DE DATA/HORA, FUSOS E INTERVALOS
+====================================================================================================
+
+--- orders.created_at: padrão do texto bruto (9=dígito)
+SQL: select regexp_replace(regexp_replace(created_at, '[0-9]', '9', 'g'), '[A-Za-z]', 'a', 'g') padrao, count(*) n, min(created_at) minimo, max(created_at) maximo from raw_orders group by 1 order by 2 desc
+padrao                    | n     | minimo                    | maximo                   
+--------------------------+-------+---------------------------+--------------------------
+9999-99-99 99:99:99-99:99 | 19785 | 2025-10-01 07:13:41-03:00 | 2026-09-30 23:59:24-03:00
+
+--- orders.status_updated_at: padrão do texto bruto (9=dígito)
+SQL: select regexp_replace(regexp_replace(status_updated_at, '[0-9]', '9', 'g'), '[A-Za-z]', 'a', 'g') padrao, count(*) n, min(status_updated_at) minimo, max(status_updated_at) maximo from raw_orders group by 1 order by 2 desc
+padrao                    | n     | minimo                    | maximo                   
+--------------------------+-------+---------------------------+--------------------------
+9999-99-99 99:99:99-99:99 | 19785 | 2025-10-01 12:06:12-03:00 | 2026-09-30 23:59:59-03:00
+
+--- order_items.created_at: padrão do texto bruto (9=dígito)
+SQL: select regexp_replace(regexp_replace(created_at, '[0-9]', '9', 'g'), '[A-Za-z]', 'a', 'g') padrao, count(*) n, min(created_at) minimo, max(created_at) maximo from raw_order_items group by 1 order by 2 desc
+padrao                    | n     | minimo                    | maximo                   
+--------------------------+-------+---------------------------+--------------------------
+9999-99-99 99:99:99-99:99 | 19803 | 2025-10-01 07:13:41-03:00 | 2026-09-30 23:59:24-03:00
+
+--- points_ledger.movement_at: padrão do texto bruto (9=dígito)
+SQL: select regexp_replace(regexp_replace(movement_at, '[0-9]', '9', 'g'), '[A-Za-z]', 'a', 'g') padrao, count(*) n, min(movement_at) minimo, max(movement_at) maximo from raw_points_ledger group by 1 order by 2 desc
+padrao                    | n      | minimo                    | maximo                   
+--------------------------+--------+---------------------------+--------------------------
+9999-99-99 99:99:99-99:99 | 146739 | 2025-09-25 01:00:00-03:00 | 2026-09-30 23:59:59-03:00
+
+--- points_ledger.valid_until: padrão do texto bruto (9=dígito)
+SQL: select regexp_replace(regexp_replace(valid_until, '[0-9]', '9', 'g'), '[A-Za-z]', 'a', 'g') padrao, count(*) n, min(valid_until) minimo, max(valid_until) maximo from raw_points_ledger group by 1 order by 2 desc
+padrao     | n      | minimo     | maximo    
+-----------+--------+------------+-----------
+9999-99-99 | 108144 | 2027-09-25 | 2028-09-30
+           | 38595  |            |           
+
+--- cards.created_at: padrão do texto bruto (9=dígito)
+SQL: select regexp_replace(regexp_replace(created_at, '[0-9]', '9', 'g'), '[A-Za-z]', 'a', 'g') padrao, count(*) n, min(created_at) minimo, max(created_at) maximo from raw_cards group by 1 order by 2 desc
+padrao                    | n     | minimo                    | maximo                   
+--------------------------+-------+---------------------------+--------------------------
+9999-99-99 99:99:99-99:99 | 16168 | 2025-09-28 00:00:00-03:00 | 2026-09-29 23:59:24-03:00
+
+--- crm_events.event_ts: padrão do texto bruto (9=dígito)
+SQL: select regexp_replace(regexp_replace(event_ts, '[0-9]', '9', 'g'), '[A-Za-z]', 'a', 'g') padrao, count(*) n, min(event_ts) minimo, max(event_ts) maximo from raw_crm_events group by 1 order by 2 desc
+padrao              | n      | minimo              | maximo             
+--------------------+--------+---------------------+--------------------
+9999-99-99 99:99:99 | 348250 | 2025-10-03 00:01:24 | 2026-09-29 23:33:50
+
+--- relatorio_mensal_cliente.mes: padrão do texto bruto (9=dígito)
+SQL: select regexp_replace(regexp_replace(mes, '[0-9]', '9', 'g'), '[A-Za-z]', 'a', 'g') padrao, count(*) n, min(mes) minimo, max(mes) maximo from raw_relatorio_mensal_cliente group by 1 order by 2 desc
+padrao  | n | minimo  | maximo 
+--------+---+---------+--------
+9999-99 | 9 | 2026-01 | 2026-09
+
+--- offsets de fuso distintos nos arquivos com fuso
+SQL: select 'orders.created_at' col, right(created_at, 6) fuso, count(*) from raw_orders group by 2 union all select 'orders.status_updated_at', right(status_updated_at, 6), count(*) from raw_orders group by 2 union all select 'order_items.created_at', right(created_at, 6), count(*) from raw_order_items group by 2 union all select 'points_ledger.movement_at', right(movement_at, 6), count(*) from raw_points_ledger group by 2 union all select 'cards.created_at', right(created_at, 6), count(*) from raw_cards group by 2
+col                       | fuso   | count_star()
+--------------------------+--------+-------------
+orders.created_at         | -03:00 | 19785       
+orders.status_updated_at  | -03:00 | 19785       
+order_items.created_at    | -03:00 | 19803       
+points_ledger.movement_at | -03:00 | 146739      
+cards.created_at          | -03:00 | 16168       
+
+--- orders.created_at = order_items.created_at?
+SQL: select count(*) itens, count(*) filter (where o.created_at = i.created_at) iguais from orders o join order_items i using (order_id)
+itens | iguais
+------+-------
+19803 | 19803 
+
+--- orders: status_updated_at < created_at?
+SQL: select count(*) from orders where status_updated_at < created_at
+count_star()
+------------
+0           
+
+--- CRM: diferença em horas entre 'Order Approved' e orders.created_at (BRT, sem fuso) do mesmo usuário
+SQL: with o as (select c.user_id, o.created_at at time zone 'America/Sao_Paulo' ts_brt_ingenuo from orders o join carts c using (cart_id) where o.status = 'APROVADO'), e as (select user_id, event_ts from crm_events where event_name = 'Order Approved') select round(epoch(e.event_ts - o.ts_brt_ingenuo) / 3600)::int dif_horas, count(*) pares from e join o using (user_id) where abs(epoch(e.event_ts - o.ts_brt_ingenuo)) < 6 * 3600 group by 1 order by 2 desc limit 6
+dif_horas | pares
+----------+------
+3         | 17506
+-4        | 27   
+2         | 26   
+5         | 24   
+4         | 24   
+1         | 22   
+
+--- CRM: cada 'Order Approved' tem pedido do mesmo usuário com created_at em UTC até 10 min antes?
+SQL: select count(*) order_approved, count(*) filter (where exists ( select 1 from orders o join carts c using (cart_id) where c.user_id = e.user_id and e.event_ts between o.created_at at time zone 'UTC' and (o.created_at at time zone 'UTC') + interval 10 minute)) casam_em_utc from crm_events e where event_name = 'Order Approved'
+order_approved | casam_em_utc
+---------------+-------------
+17494          | 17494       
+
+--- CRM vs pedidos: 'Order Approved' vs pedidos APROVADO
+SQL: select (select count(*) from crm_events where event_name = 'Order Approved') crm_order_approved, (select count(*) from orders where status = 'APROVADO') orders_aprovado, (select count(*) from order_items where status = 'APROVADO') itens_aprovado
+crm_order_approved | orders_aprovado | itens_aprovado
+-------------------+-----------------+---------------
+17494              | 17587           | 17603         
+
+--- Pedidos APROVADO sem 'Order Approved' no CRM (mesmo usuário, até 10 min depois em UTC), por dia
+SQL: with o as (select o.order_id, c.user_id, o.created_at from orders o join carts c using (cart_id) where o.status = 'APROVADO') select o.created_at::date dia_brt, count(*) pedidos_sem_evento from o where not exists ( select 1 from crm_events e where e.event_name = 'Order Approved' and e.user_id = o.user_id and e.event_ts between o.created_at at time zone 'UTC' and (o.created_at at time zone 'UTC') + interval 10 minute) group by 1 order by 2 desc limit 10
+dia_brt    | pedidos_sem_evento
+-----------+-------------------
+2026-09-30 | 63                
+2025-10-02 | 15                
+2025-10-01 | 12                
+2026-09-29 | 5                 
+
+--- Intervalo de datas por arquivo (BRT; CRM convertido de UTC)
+SQL: select 'orders.created_at' col, min(created_at)::date ini, max(created_at)::date fim from orders union all select 'orders.status_updated_at', min(status_updated_at)::date, max(status_updated_at)::date from orders union all select 'order_items.created_at', min(created_at)::date, max(created_at)::date from order_items union all select 'points_ledger.movement_at', min(movement_at)::date, max(movement_at)::date from points_ledger union all select 'points_ledger.valid_until', min(valid_until), max(valid_until) from points_ledger union all select 'cards.created_at', min(created_at)::date, max(created_at)::date from cards union all select 'crm_events.event_ts (UTC->BRT)', min(event_ts - interval 3 hour)::date, max(event_ts - interval 3 hour)::date from crm_events union all select 'relatorio.mes', strptime(min(mes), '%Y-%m')::date, strptime(max(mes), '%Y-%m')::date from relatorio_mensal_cliente
+col                            | ini        | fim       
+-------------------------------+------------+-----------
+orders.created_at              | 2025-10-01 | 2026-09-30
+orders.status_updated_at       | 2025-10-01 | 2026-09-30
+order_items.created_at         | 2025-10-01 | 2026-09-30
+points_ledger.movement_at      | 2025-09-25 | 2026-09-30
+points_ledger.valid_until      | 2027-09-25 | 2028-09-30
+cards.created_at               | 2025-09-28 | 2026-09-29
+crm_events.event_ts (UTC->BRT) | 2025-10-02 | 2026-09-29
+relatorio.mes                  | 2026-01-01 | 2026-09-01
+
+--- CRM: dias sem nenhum evento entre o primeiro e o último dia
+SQL: with d as (select range::date dia from range(date '2025-10-03', date '2026-09-30', interval 1 day)) select count(*) dias_sem_evento from d where dia not in (select (event_ts - interval 3 hour)::date from crm_events)
+dias_sem_evento
+---------------
+0              
+
+====================================================================================================
+5. RELACIONAMENTOS (órfãos e cardinalidade)
+====================================================================================================
+
+--- order_items -> orders
+SQL: select count(*) itens, count(o.order_id) com_pedido from order_items i left join orders o using (order_id)
+itens | com_pedido
+------+-----------
+19803 | 19803     
+
+--- orders -> order_items (pedido sem item)
+SQL: select count(*) pedidos, count(*) filter (where order_id not in (select order_id from order_items)) sem_item from orders
+pedidos | sem_item
+--------+---------
+19785   | 0       
+
+--- orders -> carts (1:1?)
+SQL: select count(*) pedidos, count(c.cart_id) com_carrinho, (select count(*) from carts where cart_id not in (select cart_id from orders)) carrinhos_sem_pedido from orders o left join carts c using (cart_id)
+pedidos | com_carrinho | carrinhos_sem_pedido
+--------+--------------+---------------------
+19785   | 19785        | 0                   
+
+--- orders.user_id (100% nulo -> usuário só via carts)
+SQL: select count(*) pedidos, count(user_id) com_user_id from orders
+pedidos | com_user_id
+--------+------------
+19785   | 0          
+
+--- carts.user_id -> cards.user_id
+SQL: select count(*) carrinhos, count(*) filter (where user_id in (select user_id from cards)) user_em_cards from carts
+carrinhos | user_em_cards
+----------+--------------
+19785     | 19785        
+
+--- redeemed_points -> order_items
+SQL: select count(*) linhas, count(i.order_item_id) com_item from redeemed_points r left join order_items i using (order_item_id)
+linhas | com_item
+-------+---------
+29838  | 29838   
+
+--- redeemed_points -> cards (account_id)
+SQL: select count(*) linhas, count(c.account_id) com_conta from redeemed_points r left join cards c using (account_id)
+linhas | com_conta
+-------+----------
+29838  | 29838    
+
+--- redeemed_points: conta pertence ao mesmo usuário do carrinho?
+SQL: select count(*) linhas, count(*) filter (where k.user_id = c.user_id) mesmo_usuario from redeemed_points r join order_items i using (order_item_id) join orders o using (order_id) join carts c using (cart_id) join cards k on k.account_id = r.account_id
+linhas | mesmo_usuario
+-------+--------------
+29838  | 29838        
+
+--- order_items x redeemed_points por status/tipo
+SQL: select i.status, i.product_type, count(*) itens, count(r.order_item_id) com_redeemed from order_items i left join (select distinct order_item_id from redeemed_points) r using (order_item_id) group by all order by 1, 2
+status                 | product_type  | itens | com_redeemed
+-----------------------+---------------+-------+-------------
+AGUARDANDO_CONFIRMACAO | PASSAGEM      | 15    | 0           
+AGUARDANDO_CONFIRMACAO | PRODUTO       | 16    | 0           
+AGUARDANDO_CONFIRMACAO | TRANSFERENCIA | 16    | 0           
+APROVADO               | PASSAGEM      | 8454  | 8454        
+APROVADO               | PRODUTO       | 4876  | 4876        
+APROVADO               | TRANSFERENCIA | 4273  | 4273        
+CANCELADO              | COMPRA_PONTOS | 146   | 0           
+CANCELADO              | PASSAGEM      | 437   | 0           
+CANCELADO              | PRODUTO       | 334   | 0           
+CANCELADO              | TRANSFERENCIA | 483   | 0           
+ESTORNADO              | PASSAGEM      | 79    | 79          
+ESTORNADO              | PRODUTO       | 77    | 77          
+ESTORNADO              | TRANSFERENCIA | 64    | 64          
+FINALIZADO_COM_SUCESSO | COMPRA_PONTOS | 374   | 0           
+INVALIDO               | PASSAGEM      | 72    | 0           
+INVALIDO               | PRODUTO       | 50    | 0           
+INVALIDO               | TRANSFERENCIA | 37    | 0           
+
+--- redeemed_points fecha com order_items.paid_points?
+SQL: with r as (select order_item_id, sum(points) filter (where movement_type = 'RESGATE') resgate, sum(points) filter (where movement_type = 'RESERVA') reserva, sum(points) filter (where movement_type = 'CANCELADO_RESERVA') cancelado_reserva from redeemed_points group by 1) select count(*) itens, count(*) filter (where -resgate = i.paid_points) resgate_igual_paid, count(reserva) com_reserva, count(*) filter (where reserva = -cancelado_reserva) reserva_anulada from r join order_items i using (order_item_id)
+itens | resgate_igual_paid | com_reserva | reserva_anulada
+------+--------------------+-------------+----------------
+17823 | 17823              | 5272        | 5272           
+
+--- points_ledger -> cards (account_id e user_id)
+SQL: select count(*) movimentos, count(c.account_id) com_conta, count(*) filter (where c.user_id = l.user_id) mesmo_user from points_ledger l left join cards c using (account_id)
+movimentos | com_conta | mesmo_user
+-----------+-----------+-----------
+146739     | 146739    | 146739    
+
+--- points_ledger -> dim_operation
+SQL: select count(*) movimentos, count(d.operation_code) com_operacao from points_ledger l left join dim_operation d using (operation_code)
+movimentos | com_operacao
+-----------+-------------
+146739     | 146739      
+
+--- points_ledger: sinal dos pontos x direction e valid_until por operação
+SQL: select l.operation_code, d.operation_name, d.direction, count(*) n, count(*) filter (where points > 0) positivos, count(*) filter (where points < 0) negativos, count(valid_until) com_valid_until, sum(points)::bigint soma_pontos, min(movement_at)::date ini, max(movement_at)::date fim from points_ledger l left join dim_operation d using (operation_code) group by all order by 1
+operation_code | operation_name     | direction | n      | positivos | negativos | com_valid_until | soma_pontos | ini        | fim       
+---------------+--------------------+-----------+--------+-----------+-----------+-----------------+-------------+------------+-----------
+1              | CREDITO            | CREDIT    | 101593 | 101593    | 0         | 101593          | 437817783   | 2025-09-25 | 2026-09-30
+2              | RESGATE            | DEBIT     | 17823  | 0         | 17823     | 0               | -323423650  | 2025-10-01 | 2026-09-30
+14             | ESTORNO_PEDIDO     | CREDIT    | 323    | 323       | 0         | 0               | 3396211     | 2025-10-06 | 2026-09-30
+100            | CREDITO_MIGRACAO   | CREDIT    | 6551   | 6551      | 0         | 6551            | 324024198   | 2025-11-23 | 2026-02-24
+103            | EXPIRACAO_MIGRACAO | DEBIT     | 20449  | 0         | 20449     | 0               | -64090805   | 2026-01-01 | 2026-09-30
+
+--- points_ledger: pontos fracionários?
+SQL: select count(*) from points_ledger where points <> round(points)
+count_star()
+------------
+0           
+
+--- points_ledger: prazo de validade (dias entre movimento e valid_until)
+SQL: select operation_code, datediff('day', movement_at::date, valid_until) dias, count(*) n from points_ledger where valid_until is not null group by all order by 3 desc limit 8
+operation_code | dias | n    
+---------------+------+------
+1              | 731  | 64033
+1              | 730  | 37560
+100            | 859  | 3929 
+100            | 858  | 2600 
+100            | 784  | 2    
+100            | 790  | 1    
+100            | 772  | 1    
+100            | 821  | 1    
+
+--- ledger RESGATE (op 2) x redeemed_points/order_items
+SQL: select (select count(*) from points_ledger where operation_code = 2) ledger_resgates, (select sum(points)::bigint from points_ledger where operation_code = 2) ledger_pts, (select count(distinct order_item_id) from redeemed_points where movement_type = 'RESGATE') itens_resgatados, (select sum(points) from redeemed_points where movement_type = 'RESGATE') redeemed_pts
+ledger_resgates | ledger_pts | itens_resgatados | redeemed_pts
+----------------+------------+------------------+-------------
+17823           | -323423650 | 17823            | -323423650  
+
+--- ledger ESTORNO_PEDIDO (op 14) x itens ESTORNADO + estornos parciais (refunded_points)
+SQL: select (select count(*) from points_ledger where operation_code = 14) ledger_estornos, (select sum(points)::bigint from points_ledger where operation_code = 14) ledger_pts, (select count(*) from order_items where status = 'ESTORNADO') itens_estornados, (select sum(paid_points) from order_items where status = 'ESTORNADO') pts_itens_estornados, (select count(*) from order_items where refunded_points > 0) itens_refund_parcial, (select sum(refunded_points) from order_items) pts_refund_parcial
+ledger_estornos | ledger_pts | itens_estornados | pts_itens_estornados | itens_refund_parcial | pts_refund_parcial
+----------------+------------+------------------+----------------------+----------------------+-------------------
+323             | 3396211    | 220              | 3141827              | 103                  | 254384            
+
+--- order_items.refunded_points por status
+SQL: select status, count(*) itens, count(*) filter (where refunded_points > 0) com_refund, count(*) filter (where refunded_points = paid_points) refund_total, sum(refunded_points) pts_refund from order_items group by 1 order by 2 desc
+status                 | itens | com_refund | refund_total | pts_refund
+-----------------------+-------+------------+--------------+-----------
+APROVADO               | 17603 | 103        | 0            | 254384    
+CANCELADO              | 1400  | 0          | 0            | 0         
+FINALIZADO_COM_SUCESSO | 374   | 0          | 0            | 0         
+ESTORNADO              | 220   | 0          | 0            | 0         
+INVALIDO               | 159   | 0          | 0            | 0         
+AGUARDANDO_CONFIRMACAO | 47    | 0          | 0            | 0         
+
+--- Migração: expiração (103) x crédito migrado (100) por usuário
+SQL: with u as (select user_id, sum(points) filter (where operation_code = 100) cred_mig, -sum(points) filter (where operation_code = 103) exp_mig from points_ledger group by 1) select count(cred_mig) users_migrados, count(exp_mig) users_com_expiracao, count(*) filter (where exp_mig is not null and cred_mig is null) exp_sem_credito, count(*) filter (where exp_mig > cred_mig) exp_maior_que_credito, sum(cred_mig)::bigint pts_migrados, sum(exp_mig)::bigint pts_expirados_mig from u
+users_migrados | users_com_expiracao | exp_sem_credito | exp_maior_que_credito | pts_migrados | pts_expirados_mig
+---------------+---------------------+-----------------+-----------------------+--------------+------------------
+6551           | 6416                | 0               | 0                     | 324024198    | 64090805         
+
+--- Migração: valid_until dos créditos migrados x datas das expirações
+SQL: select (select min(valid_until) from points_ledger where operation_code = 100) valid_until_min_mig, (select max(valid_until) from points_ledger where operation_code = 100) valid_until_max_mig, (select min(movement_at)::date from points_ledger where operation_code = 103) primeira_expiracao_mig, (select max(movement_at)::date from points_ledger where operation_code = 103) ultima_expiracao_mig
+valid_until_min_mig | valid_until_max_mig | primeira_expiracao_mig | ultima_expiracao_mig
+--------------------+---------------------+------------------------+---------------------
+2028-03-31          | 2028-03-31          | 2026-01-01             | 2026-09-30          
+
+--- Ledger: algum usuário com saldo acumulado negativo?
+SQL: with s as (select user_id, sum(points) over (partition by user_id order by movement_at, movement_id rows unbounded preceding) saldo from points_ledger) select count(distinct user_id) users_saldo_negativo from s where saldo < 0
+users_saldo_negativo
+--------------------
+0                   
+
+--- cards: exatamente um is_most_recent por usuário? e é o cartão mais novo?
+SQL: select (select count(*) from (select user_id from cards group by 1 having sum(is_most_recent::int) <> 1)) users_sem_exatamente_1, (select count(*) from cards c where is_most_recent and created_at < (select max(created_at) from cards c2 where c2.user_id = c.user_id)) most_recent_nao_e_o_mais_novo
+users_sem_exatamente_1 | most_recent_nao_e_o_mais_novo
+-----------------------+------------------------------
+0                      | 1858                         
+
+--- cards: movimentos do ledger anteriores a cards.created_at
+SQL: select l.operation_code, count(*) movimentos, count(*) filter (where l.movement_at < c.created_at) antes_do_cartao from points_ledger l join cards c using (account_id) group by 1 order by 1
+operation_code | movimentos | antes_do_cartao
+---------------+------------+----------------
+1              | 101593     | 6103           
+2              | 17823      | 974            
+14             | 323        | 14             
+100            | 6551       | 657            
+103            | 20449      | 960            
+
+--- cards: card_class x card_flag
+SQL: select card_class, card_flag, count(*) from cards group by all order by 1, 2
+card_class   | card_flag  | count_star()
+-------------+------------+-------------
+Black        | ELO        | 402         
+Black        | MASTERCARD | 420         
+Essencial    | ELO        | 660         
+Essencial    | MASTERCARD | 2807        
+Essencial    | VISA       | 2874        
+Gold         | ELO        | 417         
+Gold         | MASTERCARD | 1896        
+Gold         | VISA       | 1841        
+Infinite     | VISA       | 1131        
+Platinum     | ELO        | 260         
+Platinum     | MASTERCARD | 1104        
+Platinum     | VISA       | 1081        
+Platinum Elo | ELO        | 878         
+Platinum Elo | MASTERCARD | 397         
+
+--- crm_events.user_id -> cards.user_id
+SQL: select count(distinct user_id) users_crm, count(distinct user_id) filter (where user_id in (select user_id from cards)) em_cards, count(*) filter (where user_id is null) eventos_sem_user from crm_events
+users_crm | em_cards | eventos_sem_user
+----------+----------+-----------------
+12000     | 12000    | 20252           
+
+====================================================================================================
+6. ESTRUTURA DO JSON event_properties
+====================================================================================================
+
+--- JSON válido?
+SQL: select json_valid(event_properties) valido, count(*) from crm_events group by 1
+valido | count_star()
+-------+-------------
+True   | 348250      
+
+--- Conjunto de chaves por event_name
+SQL: select event_name, list_sort(json_keys(event_properties::json)) chaves, count(*) n from crm_events group by all order by 1, 3 desc
+event_name           | chaves                          | n     
+---------------------+---------------------------------+-------
+Notification Clicked | ['campaign_name', 'link']       | 4796  
+Notification Clicked | ['campaign_name']               | 3325  
+Notification Failed  | ['campaign_name', 'reason']     | 5814  
+Notification Sent    | ['campaign_name']               | 143737
+Notification Sent    | ['campaign_name', 'platform']   | 58083 
+Notification Sent    | ['audience']                    | 27000 
+Notification Viewed  | ['campaign_name', 'open_count'] | 45313 
+Notification Viewed  | ['campaign_name']               | 10663 
+Order Approved       | ['source']                      | 17494 
+Push Impressions     | ['campaign_name']               | 32025 
+
+--- Tipo JSON de cada chave
+SQL: select k chave, json_type(event_properties::json -> k) tipo, count(*) n from (select event_properties, unnest(json_keys(event_properties::json)) k from crm_events) group by all order by 3 desc
+chave         | tipo    | n     
+--------------+---------+-------
+campaign_name | VARCHAR | 303756
+platform      | VARCHAR | 58083 
+open_count    | UBIGINT | 45313 
+audience      | VARCHAR | 27000 
+source        | VARCHAR | 17494 
+reason        | VARCHAR | 5814  
+link          | VARCHAR | 4796  
+
+--- Valores das chaves não-ID
+SQL: select k chave, json_extract_string(event_properties, '$.' || k) valor, count(*) n from (select event_properties, unnest(json_keys(event_properties::json)) k from crm_events) where k <> 'campaign_name' group by all order by 1, 3 desc
+chave      | valor       | n    
+-----------+-------------+------
+audience   | lookalike   | 27000
+link       | catalogo    | 3920 
+link       | oferta      | 876  
+open_count | 1           | 43134
+open_count | 2           | 2179 
+platform   | android     | 37567
+platform   | ios         | 20516
+reason     | hard_bounce | 1975 
+reason     | soft_bounce | 1935 
+reason     | blocked     | 1904 
+source     | backend     | 17494
+
+--- campaign_name (JSON) = campaign_id (coluna)?
+SQL: select count(*) filter (where json_extract_string(event_properties, '$.campaign_name') is not null) com_campaign_name, count(*) filter (where json_extract_string(event_properties, '$.campaign_name') = campaign_id) iguais from crm_events
+com_campaign_name | iguais
+------------------+-------
+303756            | 303756
+
+--- event_name x campaign_type (+ user_id nulo)
+SQL: select event_name, campaign_type, count(*) n, count(distinct campaign_id) campanhas, count(*) - count(user_id) sem_user from crm_events group by all order by 1, 2
+event_name           | campaign_type         | n      | campanhas | sem_user
+---------------------+-----------------------+--------+-----------+---------
+Notification Clicked | Email                 | 4796   | 85        | 0       
+Notification Clicked | InApp                 | 1015   | 12        | 0       
+Notification Clicked | Push                  | 2310   | 27        | 325     
+Notification Failed  | Email                 | 5814   | 72        | 0       
+Notification Sent    | Email                 | 143737 | 84        | 0       
+Notification Sent    | Facebook Audiences    | 27000  | 3         | 0       
+Notification Sent    | Mobile Push - Android | 37567  | 27        | 10520   
+Notification Sent    | Mobile Push - iOS     | 20516  | 27        | 2061    
+Notification Viewed  | Email                 | 45313  | 73        | 0       
+Notification Viewed  | InApp                 | 10663  | 12        | 437     
+Order Approved       |                       | 17494  | 0         | 0       
+Push Impressions     | Push                  | 32025  | 27        | 6909    
+
+--- Prefixos de campaign_id
+SQL: select regexp_extract(campaign_id, '^CMP_([A-Z_]+_)?', 0) prefixo, count(distinct campaign_id) campanhas, count(*) eventos from crm_events where campaign_id is not null group by 1 order by 2 desc
+prefixo             | campanhas | eventos
+--------------------+-----------+--------
+CMP_                | 113       | 315933 
+CMP_OFERTA_         | 12        | 1751   
+CMP_TESTE_          | 1         | 335    
+CMP_LANCAMENTO_PIX_ | 1         | 12737  
+
+--- Campanhas com nome semântico (não hash)
+SQL: select campaign_id, campaign_type, min(event_ts) inicio_utc, max(event_ts) fim_utc, count(*) filter (where event_name = 'Notification Sent') enviados from crm_events where campaign_id similar to 'CMP_[A-Z_]+_[0-9a-f]+' group by all order by 3
+campaign_id                                 | campaign_type         | inicio_utc          | fim_utc             | enviados
+--------------------------------------------+-----------------------+---------------------+---------------------+---------
+CMP_OFERTA_d90bb292a2249fe336bea3e8         | Email                 | 2025-10-03 05:46:50 | 2025-10-27 03:45:33 | 12      
+CMP_OFERTA_50f5b83dde1f3dbc1f9be284         | Email                 | 2025-11-02 02:48:34 | 2025-11-28 06:31:35 | 17      
+CMP_OFERTA_5d2c0331aa4cbb2f0cdcdb29         | Email                 | 2025-11-27 06:56:08 | 2025-12-31 16:05:15 | 27      
+CMP_OFERTA_5d058c2ae8f8e2481431c8fa         | Email                 | 2025-12-26 07:21:28 | 2026-01-27 22:19:53 | 78      
+CMP_OFERTA_00463f62cb9f2472a29b5c44         | Email                 | 2026-01-31 22:23:20 | 2026-02-23 09:34:05 | 22      
+CMP_OFERTA_1d3d2c1f9e93ef802b2f4f5d         | Email                 | 2026-02-23 22:10:42 | 2026-03-30 13:40:59 | 38      
+CMP_TESTE_627e1031b111241b8dde6845          | Mobile Push - Android | 2026-03-20 18:00:34 | 2026-03-20 18:59:27 | 149     
+CMP_TESTE_627e1031b111241b8dde6845          | Mobile Push - iOS     | 2026-03-20 18:04:18 | 2026-03-20 18:59:59 | 66      
+CMP_TESTE_627e1031b111241b8dde6845          | Push                  | 2026-03-20 18:05:34 | 2026-03-20 21:14:25 | 0       
+CMP_OFERTA_8ac4c842d1e5cf9801fcbbcf         | Email                 | 2026-03-24 22:23:05 | 2026-04-29 00:46:12 | 38      
+CMP_OFERTA_29ee91eec646fca6733fcb01         | Email                 | 2026-04-25 21:19:05 | 2026-05-29 03:37:28 | 96      
+CMP_OFERTA_4d530e2ca8da45a9f1801fba         | Email                 | 2026-05-26 02:40:43 | 2026-06-30 02:41:16 | 123     
+CMP_LANCAMENTO_PIX_4dbee001e6aba1eb57b512c3 | Email                 | 2026-05-28 13:00:01 | 2026-06-04 15:02:58 | 9284    
+CMP_OFERTA_a63a6e9bf2310696122cbaa3         | Email                 | 2026-06-24 18:23:32 | 2026-07-31 10:06:37 | 137     
+CMP_OFERTA_ff87e1a0a5a027d30083611b         | Email                 | 2026-07-25 21:57:45 | 2026-08-31 04:11:53 | 136     
+CMP_OFERTA_7eeeb00c6e5646f63e8bd7db         | Email                 | 2026-08-27 12:22:04 | 2026-09-27 21:38:54 | 151     
+
+--- Lançamento: primeiro Pix (BRT) x envio da campanha CMP_LANCAMENTO_PIX (UTC->BRT)
+SQL: select (select min(created_at) from order_items where supplier_name = 'Pix Pontua+') primeiro_pix_brt, (select min(event_ts) - interval 3 hour from crm_events where campaign_id like 'CMP_LANCAMENTO_PIX%' and event_name = 'Notification Sent') inicio_envio_brt, (select count(*) from order_items where supplier_name = 'Pix Pontua+' and created_at < (select min(event_ts) from crm_events where campaign_id like 'CMP_LANCAMENTO_PIX%') at time zone 'UTC') itens_pix_antes_do_envio
+primeiro_pix_brt          | inicio_envio_brt    | itens_pix_antes_do_envio
+--------------------------+---------------------+-------------------------
+2026-05-27 09:15:33-03:00 | 2026-05-28 10:00:01 | 16                      
+
+--- control_group preenchido?
+SQL: select count(*) linhas, count(control_group) com_control_group from crm_events
+linhas | com_control_group
+-------+------------------
+348250 | 0                
+
+====================================================================================================
+7. RELATÓRIO MENSAL x DADOS BRUTOS
+====================================================================================================
+
+--- Pix: valor por ponto no item
+SQL: select status, count(*) itens, sum(paid_points) pontos, round(sum(product_value), 2) reais, round(sum(product_value) / sum(paid_points), 5) reais_por_ponto, count(*) filter (where abs(paid_points * 0.019 - product_value) <= 0.01) itens_a_0019, sum(paid_currency) paid_currency from order_items where supplier_name = 'Pix Pontua+' group by 1 order by 2 desc
+status                 | itens | pontos   | reais     | reais_por_ponto | itens_a_0019 | paid_currency
+-----------------------+-------+----------+-----------+-----------------+--------------+--------------
+APROVADO               | 2808  | 37979434 | 721610.73 | 0.019           | 2808         | 0.0          
+CANCELADO              | 403   | 5503340  | 104563.74 | 0.019           | 403          | 0.0          
+ESTORNADO              | 42    | 533768   | 10141.66  | 0.019           | 42           | 0.0          
+INVALIDO               | 25    | 366615   | 6965.67   | 0.019           | 25           | 0.0          
+AGUARDANDO_CONFIRMACAO | 14    | 163130   | 3099.49   | 0.019           | 14           | 0.0          
+
+--- Pix por mês: relatório x itens (todos os status e só APROVADO)
+SQL: select r.mes, r.pix_transacoes rel_transacoes, count(i.order_item_id) itens_todos, count(*) filter (where i.status = 'APROVADO') itens_aprov, r.pix_pontos::bigint rel_pontos, sum(i.paid_points) pts_todos, sum(i.paid_points) filter (where i.status = 'APROVADO') pts_aprov, r.pix_reais rel_reais, round(sum(i.product_value), 2) reais_todos, round(sum(i.product_value) filter (where i.status = 'APROVADO'), 2) reais_aprov, round(r.pix_reais / sum(i.product_value) filter (where i.status = 'APROVADO'), 4) rel_sobre_aprov, round(r.pix_reais / r.pix_pontos, 5) rel_reais_por_ponto from relatorio_mensal_cliente r join order_items i on strftime(i.created_at, '%Y-%m') = r.mes and i.supplier_name = 'Pix Pontua+' group by r.mes, r.pix_transacoes, r.pix_pontos, r.pix_reais order by 1
+mes     | rel_transacoes | itens_todos | itens_aprov | rel_pontos | pts_todos | pts_aprov | rel_reais | reais_todos | reais_aprov | rel_sobre_aprov | rel_reais_por_ponto
+--------+----------------+-------------+-------------+------------+-----------+-----------+-----------+-------------+-------------+-----------------+--------------------
+2026-05 | 85.0           | 85          | 75          | 1202701    | 1202701   | 1051095   | 19921.29  | 22851.35    | 19970.83    | 0.9975          | 0.01656            
+2026-06 | 822.0          | 822         | 704         | 10709419   | 10709419  | 9215135   | 174261.75 | 203479.46   | 175087.95   | 0.9953          | 0.01627            
+2026-07 | 759.0          | 759         | 648         | 10445204   | 10445204  | 8960664   | 169868.42 | 198459.35   | 170253.03   | 0.9977          | 0.01626            
+2026-08 | 783.0          | 783         | 677         | 10672206   | 10672206  | 9366874   | 177263.34 | 202772.27   | 177970.87   | 0.996           | 0.01661            
+2026-09 | 843.0          | 843         | 704         | 11516757   | 11516757  | 9385666   | 177056.0  | 218818.86   | 178328.05   | 0.9929          | 0.01537            
+
+--- Mix por mês: pontos de itens APROVADO por category_macro (transferências a parceiros = Varejo) x relatório
+SQL: with b as ( select strftime(created_at, '%Y-%m') mes, paid_points pts, case when supplier_name = 'Pix Pontua+' then 'pix' when category_macro = 'Aereas' then 'aereas' when category_macro = 'Varejo' then 'varejo' end cat, product_type from order_items where status = 'APROVADO' and product_type <> 'COMPRA_PONTOS') select b.mes, round(100.0 * sum(pts) filter (where cat = 'aereas') / sum(pts), 1) aereas_calc, any_value(r.aereas_pct) aereas_rel, round(100.0 * sum(pts) filter (where cat = 'varejo') / sum(pts), 1) varejo_calc, any_value(r.varejo_pct) varejo_rel, round(100.0 * coalesce(sum(pts) filter (where cat = 'pix'), 0) / sum(pts), 1) pix_calc, any_value(r.pix_pct) pix_rel, round(100.0 * sum(pts) filter (where product_type = 'PRODUTO') / sum(pts), 1) varejo_so_produto_calc from b left join relatorio_mensal_cliente r using (mes) group by 1 order by 1
+mes     | aereas_calc | aereas_rel | varejo_calc | varejo_rel | pix_calc | pix_rel | varejo_so_produto_calc
+--------+-------------+------------+-------------+------------+----------+---------+-----------------------
+2025-10 | 79.1        |            | 20.9        |            | 0.0      |         | 16.0                  
+2025-11 | 78.3        |            | 21.7        |            | 0.0      |         | 17.1                  
+2025-12 | 77.3        |            | 22.7        |            | 0.0      |         | 16.9                  
+2026-01 | 96.7        | 97         | 3.3         | 3          | 0.0      |         | 2.5                   
+2026-02 | 79.8        | 80         | 20.2        | 20         | 0.0      |         | 15.8                  
+2026-03 | 78.7        | 79         | 21.3        | 21         | 0.0      |         | 16.2                  
+2026-04 | 80.7        | 81         | 19.3        | 19         | 0.0      |         | 14.7                  
+2026-05 | 74.8        | 75         | 20.3        | 20         | 4.9      | 5.0     | 16.2                  
+2026-06 | 56.3        | 55         | 13.3        | 13         | 30.4     | 32.0    | 12.3                  
+2026-07 | 57.9        | 58         | 12.8        | 13         | 29.3     | 29.0    | 11.8                  
+2026-08 | 58.0        | 58         | 12.1        | 12         | 29.9     | 30.0    | 10.9                  
+2026-09 | 59.0        | 59         | 13.0        | 13         | 28.0     | 28.0    | 12.0                  
+
+--- Mix junho com todos os status (tentativa de reproduzir 55/13/32)
+SQL: with b as ( select paid_points pts, case when supplier_name = 'Pix Pontua+' then 'pix' when category_macro = 'Aereas' then 'aereas' else 'varejo' end cat from order_items where strftime(created_at, '%Y-%m') = '2026-06' and product_type <> 'COMPRA_PONTOS') select round(100.0 * sum(pts) filter (where cat = 'aereas') / sum(pts), 1) aereas, round(100.0 * sum(pts) filter (where cat = 'varejo') / sum(pts), 1) varejo, round(100.0 * sum(pts) filter (where cat = 'pix') / sum(pts), 1) pix from b
+aereas | varejo | pix 
+-------+--------+-----
+54.7   | 13.5   | 31.8
+
+--- E-mails e push enviados: relatório x CRM (Notification Sent, mês em BRT)
+SQL: with e as (select strftime(event_ts - interval 3 hour, '%Y-%m') mes, campaign_type from crm_events where event_name = 'Notification Sent'), a as (select mes, count(*) filter (where campaign_type = 'Email') emails_crm, count(*) filter (where campaign_type like 'Mobile Push%') push_crm from e group by 1) select r.mes, r.emails_enviados emails_rel, a.emails_crm, round(r.emails_enviados / a.emails_crm, 4) razao_email, r.push_enviados::bigint push_rel, a.push_crm, round(r.push_enviados / nullif(a.push_crm, 0), 4) razao_push from relatorio_mensal_cliente r left join a using (mes) order by 1
+mes     | emails_rel | emails_crm | razao_email | push_rel | push_crm | razao_push
+--------+------------+------------+-------------+----------+----------+-----------
+2026-01 | 13648      | 13691      | 0.9969      |          | 0        |           
+2026-02 | 10936      | 11076      | 0.9874      |          | 0        |           
+2026-03 | 11397      | 11625      | 0.9804      |          | 215      |           
+2026-04 | 10797      | 10839      | 0.9961      | 10051    | 10091    | 0.996     
+2026-05 | 20093      | 20399      | 0.985       | 11418    | 11592    | 0.985     
+2026-06 | 12349      | 12309      | 1.0032      | 10657    | 10622    | 1.0033    
+2026-07 | 11258      | 11460      | 0.9824      | 12970    | 13204    | 0.9823    
+2026-08 | 13645      | 10108      | 1.3499      | 3685     | 2730     | 1.3498    
+2026-09 | 14662      | 10861      | 1.35        | 12999    | 9629     | 1.35      
+
+--- Itens por mês e grupo (contexto para jan/2026 e mudanças de fornecedor)
+SQL: select strftime(created_at, '%Y-%m') mes, count(*) filter (where category_macro = 'Aereas') aereas, count(*) filter (where product_type = 'PRODUTO') produtos, count(*) filter (where supplier_name in ('Nuvem Recompensas', 'Pontos Max')) transf_parceiros, count(*) filter (where supplier_name = 'Pix Pontua+') pix, count(*) filter (where product_type = 'COMPRA_PONTOS') compra_pontos from order_items group by 1 order by 1
+mes     | aereas | produtos | transf_parceiros | pix | compra_pontos
+--------+--------+----------+------------------+-----+--------------
+2025-10 | 329    | 220      | 99               | 0   | 0            
+2025-11 | 348    | 272      | 101              | 0   | 58           
+2025-12 | 443    | 324      | 150              | 0   | 44           
+2026-01 | 1977   | 340      | 165              | 0   | 53           
+2026-02 | 570    | 384      | 168              | 0   | 40           
+2026-03 | 677    | 473      | 224              | 0   | 56           
+2026-04 | 670    | 442      | 180              | 0   | 49           
+2026-05 | 732    | 546      | 195              | 85  | 39           
+2026-06 | 790    | 578      | 70               | 822 | 51           
+2026-07 | 790    | 563      | 68               | 759 | 43           
+2026-08 | 799    | 556      | 80               | 783 | 48           
+2026-09 | 932    | 655      | 81               | 843 | 39           

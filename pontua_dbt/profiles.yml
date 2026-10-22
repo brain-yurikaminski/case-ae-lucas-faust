@@ -1,0 +1,9 @@
+# Sem segredos: banco local DuckDB. Caminhos relativos à raiz do repositório
+# (rodar sempre a partir da raiz, com --project-dir pontua_dbt --profiles-dir pontua_dbt).
+pontua_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: pontua_dbt/pontua.duckdb
+      threads: 1

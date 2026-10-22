@@ -1,0 +1,14 @@
+name: pontua_dbt
+version: "1.0.0"
+config-version: 2
+profile: pontua_dbt
+
+model-paths: ["models"]
+test-paths: ["tests"]
+
+models:
+  pontua_dbt:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

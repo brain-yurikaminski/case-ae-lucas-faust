@@ -1,0 +1,14 @@
+[
+ {
+  "grupo": "NAO_RECEBEU",
+  "usuarios": 1094,
+  "usuarios_resgataram_pix": 489,
+  "pct_resgataram_pix": 0.4469835466179159
+ },
+ {
+  "grupo": "RECEBEU_CMP_LANCAMENTO_PIX",
+  "usuarios": 3699,
+  "usuarios_resgataram_pix": 1683,
+  "pct_resgataram_pix": 0.45498783454987834
+ }
+]

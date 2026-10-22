@@ -3,3 +3,14 @@ storytelling_diretoria.md
 .claude/
 linha_do_tempo.sh
 .env
+
+# GAIDE-Trace local store (connect to a data repo if you want it versioned)
+.gaide-trace/
+.venv/
+logs/
+target/
+dbt_packages/
+*.duckdb
+*.duckdb.wal
+.claude/settings.local.json
+.claude/hooks/trace_hook.py

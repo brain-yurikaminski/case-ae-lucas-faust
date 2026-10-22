@@ -1,0 +1,386 @@
+[
+ {
+  "mes": "2026-02",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 12660000,
+  "itens": 533,
+  "valor_reais": 222012.8299999999,
+  "reais_por_ponto": 0.01729172748815165
+ },
+ {
+  "mes": "2026-02",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 2492218,
+  "itens": 354,
+  "valor_reais": 51168.170000000006,
+  "reais_por_ponto": 0.020132250103248695
+ },
+ {
+  "mes": "2025-11",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 457000,
+  "itens": 93,
+  "valor_reais": 5712.5,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-06",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 9215135,
+  "itens": 713,
+  "valor_reais": 176390.41999999998,
+  "reais_por_ponto": 0.01900004177909493
+ },
+ {
+  "mes": "2026-04",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 856800,
+  "itens": 170,
+  "valor_reais": 10782.5,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2025-11",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 7817300,
+  "itens": 330,
+  "valor_reais": 132876.84999999998,
+  "reais_por_ponto": 0.016779252427308655
+ },
+ {
+  "mes": "2025-11",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 1694575,
+  "itens": 257,
+  "valor_reais": 34804.450000000004,
+  "reais_por_ponto": 0.02018132005534314
+ },
+ {
+  "mes": "2026-02",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 691200,
+  "itens": 156,
+  "valor_reais": 8792.5,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-03",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 985700,
+  "itens": 215,
+  "valor_reais": 12473.75,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-07",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 297300,
+  "itens": 62,
+  "valor_reais": 3875.0,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-08",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 18180800,
+  "itens": 735,
+  "valor_reais": 303851.54999999976,
+  "reais_por_ponto": 0.016599674381765368
+ },
+ {
+  "mes": "2026-08",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 3418913,
+  "itens": 519,
+  "valor_reais": 70334.72000000002,
+  "reais_por_ponto": 0.019768650632176633
+ },
+ {
+  "mes": "2026-09",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 9385666,
+  "itens": 715,
+  "valor_reais": 181670.64999999997,
+  "reais_por_ponto": 0.019000042191997885
+ },
+ {
+  "mes": "2025-10",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 423100,
+  "itens": 94,
+  "valor_reais": 5416.25,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-01",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 85611500,
+  "itens": 1935,
+  "valor_reais": 1305863.3200000005,
+  "reais_por_ponto": 0.015244764546819068
+ },
+ {
+  "mes": "2026-07",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 8960664,
+  "itens": 658,
+  "valor_reais": 173086.12999999995,
+  "reais_por_ponto": 0.01900004620193325
+ },
+ {
+  "mes": "2026-05",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 16111500,
+  "itens": 689,
+  "valor_reais": 273942.4200000001,
+  "reais_por_ponto": 0.01689963628464141
+ },
+ {
+  "mes": "2026-05",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 3470992,
+  "itens": 510,
+  "valor_reais": 73715.81000000001,
+  "reais_por_ponto": 0.020701427011460046
+ },
+ {
+  "mes": "2025-12",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 9347900,
+  "itens": 414,
+  "valor_reais": 158175.29,
+  "reais_por_ponto": 0.016695363664566372
+ },
+ {
+  "mes": "2026-01",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 2199182,
+  "itens": 318,
+  "valor_reais": 42174.079999999994,
+  "reais_por_ponto": 0.018838215691324718
+ },
+ {
+  "mes": "2025-12",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 2019068,
+  "itens": 293,
+  "valor_reais": 41870.37,
+  "reais_por_ponto": 0.02040552216240588
+ },
+ {
+  "mes": "2026-07",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 3556813,
+  "itens": 522,
+  "valor_reais": 76242.79999999997,
+  "reais_por_ponto": 0.021023064532045024
+ },
+ {
+  "mes": "2026-03",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 15005800,
+  "itens": 628,
+  "valor_reais": 253803.24999999997,
+  "reais_por_ponto": 0.01654645403777206
+ },
+ {
+  "mes": "2026-07",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 17687900,
+  "itens": 735,
+  "valor_reais": 293669.81999999995,
+  "reais_por_ponto": 0.01628939501014817
+ },
+ {
+  "mes": "2026-03",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 3079447,
+  "itens": 436,
+  "valor_reais": 59835.249999999985,
+  "reais_por_ponto": 0.01921856324190904
+ },
+ {
+  "mes": "2026-05",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 1051095,
+  "itens": 76,
+  "valor_reais": 20071.020000000004,
+  "reais_por_ponto": 0.01900002378471975
+ },
+ {
+  "mes": "2026-06",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 17091900,
+  "itens": 739,
+  "valor_reais": 289151.28000000014,
+  "reais_por_ponto": 0.016774108788373446
+ },
+ {
+  "mes": "2026-06",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 3702594,
+  "itens": 534,
+  "valor_reais": 77798.48999999993,
+  "reais_por_ponto": 0.02040662686049795
+ },
+ {
+  "mes": "2026-05",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 871400,
+  "itens": 183,
+  "valor_reais": 11075.0,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2025-12",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 701200,
+  "itens": 140,
+  "valor_reais": 8795.0,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-01",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 667800,
+  "itens": 152,
+  "valor_reais": 8347.5,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-04",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 15212500,
+  "itens": 634,
+  "valor_reais": 263594.0100000001,
+  "reais_por_ponto": 0.017105390961380453
+ },
+ {
+  "mes": "2026-04",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 2753285,
+  "itens": 417,
+  "valor_reais": 58025.36999999997,
+  "reais_por_ponto": 0.02053377651598167
+ },
+ {
+  "mes": "2025-10",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 6862800,
+  "itens": 305,
+  "valor_reais": 112145.63999999998,
+  "reais_por_ponto": 0.01617468380252958
+ },
+ {
+  "mes": "2025-10",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 1377178,
+  "itens": 202,
+  "valor_reais": 28675.140000000007,
+  "reais_por_ponto": 0.020247579032188448
+ },
+ {
+  "mes": "2026-08",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 375800,
+  "itens": 78,
+  "valor_reais": 4982.5,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-09",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 313900,
+  "itens": 76,
+  "valor_reais": 4050.0,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-06",
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "pontos_liquidos": 305700,
+  "itens": 68,
+  "valor_reais": 3821.25,
+  "reais_por_ponto": 0.0125
+ },
+ {
+  "mes": "2026-08",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 9366874,
+  "itens": 688,
+  "valor_reais": 180534.16999999993,
+  "reais_por_ponto": 0.019000028184429505
+ },
+ {
+  "mes": "2026-09",
+  "tipo_resgate": "AEREO",
+  "pontos_liquidos": 19762300,
+  "itens": 856,
+  "valor_reais": 340595.17000000004,
+  "reais_por_ponto": 0.0170893286712579
+ },
+ {
+  "mes": "2026-09",
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "pontos_liquidos": 3984640,
+  "itens": 591,
+  "valor_reais": 84466.01000000001,
+  "reais_por_ponto": 0.02066905323031334
+ },
+ {
+  "mes": "2026-04",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 0,
+  "itens": 0,
+  "valor_reais": 0.0,
+  "reais_por_ponto": null
+ },
+ {
+  "mes": "2025-10",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 0,
+  "itens": 0,
+  "valor_reais": 0.0,
+  "reais_por_ponto": null
+ },
+ {
+  "mes": "2026-01",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 0,
+  "itens": 0,
+  "valor_reais": 0.0,
+  "reais_por_ponto": null
+ },
+ {
+  "mes": "2025-11",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 0,
+  "itens": 0,
+  "valor_reais": 0.0,
+  "reais_por_ponto": null
+ },
+ {
+  "mes": "2026-02",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 0,
+  "itens": 0,
+  "valor_reais": 0.0,
+  "reais_por_ponto": null
+ },
+ {
+  "mes": "2025-12",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 0,
+  "itens": 0,
+  "valor_reais": 0.0,
+  "reais_por_ponto": null
+ },
+ {
+  "mes": "2026-03",
+  "tipo_resgate": "PIX",
+  "pontos_liquidos": 0,
+  "itens": 0,
+  "valor_reais": 0.0,
+  "reais_por_ponto": null
+ }
+]
