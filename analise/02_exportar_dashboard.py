@@ -3,6 +3,9 @@
 Somente leitura no banco. Não exporta nada em nível de usuário: só marts da lista abaixo
 (mart_pix_usuarios fica de fora) e o script aborta se alguma coluna identificar usuário ou dispositivo.
 
+Também grava dados/dados.js (window.DADOS_PONTUA = {...}) com os mesmos registros, para o dashboard abrir
+direto no navegador (file://), onde fetch de JSON é bloqueado.
+
 Uso (depois do dbt build):
     env -u VIRTUAL_ENV poetry run python analise/02_exportar_dashboard.py
 """
@@ -48,6 +51,7 @@ def valor_json(v):
 def main():
     SAIDA.mkdir(parents=True, exist_ok=True)
     con = duckdb.connect(BANCO.as_posix(), read_only=True)
+    todos = {}
     for arquivo, mart in EXPORTACOES.items():
         cur = con.execute(f"select * from {mart}")
         colunas = [d[0] for d in cur.description]
@@ -55,9 +59,17 @@ def main():
         if proibidas:
             raise SystemExit(f"{mart} tem colunas de nível de linha/usuário: {sorted(proibidas)}")
         registros = [{c: valor_json(v) for c, v in zip(colunas, linha)} for linha in cur.fetchall()]
+        todos[arquivo] = registros
         destino = SAIDA / f"{arquivo}.json"
         destino.write_text(json.dumps(registros, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         print(f"{destino.relative_to(RAIZ)}: {len(registros)} linhas, {len(colunas)} colunas (de {mart})")
+    embutido = SAIDA / "dados.js"
+    embutido.write_text(
+        "// Gerado por analise/02_exportar_dashboard.py. Não editar à mão.\n"
+        "window.DADOS_PONTUA = " + json.dumps(todos, ensure_ascii=False) + ";\n",
+        encoding="utf-8",
+    )
+    print(f"{embutido.relative_to(RAIZ)}: {embutido.stat().st_size} bytes")
 
 
 if __name__ == "__main__":
