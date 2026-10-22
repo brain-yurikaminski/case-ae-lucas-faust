@@ -1,0 +1,66 @@
+[
+ {
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "periodo": "POS",
+  "meses_no_periodo": 4,
+  "media_mensal_pontos_liquidos": 323175.0,
+  "variacao_absoluta": -521391.6666666666,
+  "variacao_pct": -0.6173481469787268
+ },
+ {
+  "tipo_resgate": "TRANSFERENCIA_PARCEIRO",
+  "periodo": "PRE",
+  "meses_no_periodo": 3,
+  "media_mensal_pontos_liquidos": 844566.6666666666,
+  "variacao_absoluta": null,
+  "variacao_pct": null
+ },
+ {
+  "tipo_resgate": "PIX",
+  "periodo": "POS",
+  "meses_no_periodo": 4,
+  "media_mensal_pontos_liquidos": 9232084.75,
+  "variacao_absoluta": 9232084.75,
+  "variacao_pct": null
+ },
+ {
+  "tipo_resgate": "PIX",
+  "periodo": "PRE",
+  "meses_no_periodo": 3,
+  "media_mensal_pontos_liquidos": 0.0,
+  "variacao_absoluta": null,
+  "variacao_pct": null
+ },
+ {
+  "tipo_resgate": "AEREO",
+  "periodo": "POS",
+  "meses_no_periodo": 4,
+  "media_mensal_pontos_liquidos": 18180725.0,
+  "variacao_absoluta": 3887958.333333334,
+  "variacao_pct": 0.2720227947469933
+ },
+ {
+  "tipo_resgate": "AEREO",
+  "periodo": "PRE",
+  "meses_no_periodo": 3,
+  "media_mensal_pontos_liquidos": 14292766.666666666,
+  "variacao_absoluta": null,
+  "variacao_pct": null
+ },
+ {
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "periodo": "POS",
+  "meses_no_periodo": 4,
+  "media_mensal_pontos_liquidos": 3665740.0,
+  "variacao_absoluta": 890756.6666666665,
+  "variacao_pct": 0.3209953212932209
+ },
+ {
+  "tipo_resgate": "VAREJO_PRODUTO",
+  "periodo": "PRE",
+  "meses_no_periodo": 3,
+  "media_mensal_pontos_liquidos": 2774983.3333333335,
+  "variacao_absoluta": null,
+  "variacao_pct": null
+ }
+]

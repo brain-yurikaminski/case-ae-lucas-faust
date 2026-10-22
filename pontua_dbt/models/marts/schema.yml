@@ -281,3 +281,134 @@ models:
         description: "Candidata acumulada: expirados da migração / migrados."
       - name: bk_saldo_sobre_emitidos_acum
         description: "Candidata acumulada: saldo acumulado / (creditados + migrados). Inclui saldo ainda válido."
+
+  - name: mart_mix_absoluto_mensal
+    description: >
+      Volume de resgates por mês e tipo. Grão: mês × tipo_resgate, com grade completa (um tipo sem resgate no mês
+      aparece com zero; o Pix tem zero antes de 27/05/2026). Base: fct_resgates (itens APROVADO e ESTORNADO), em
+      horário de Brasília. pontos_liquidos, itens e valor_reais cobrem APROVADO e ESTORNADO (estornados contam 0
+      pontos líquidos). reais_por_ponto considera só itens APROVADO (valor_reais / pontos_brutos) e é nulo quando
+      não há item aprovado.
+    columns:
+      - name: mes
+        description: "Mês AAAA-MM (horário de Brasília). De 2025-10 a 2026-09."
+        data_tests: [not_null]
+      - name: tipo_resgate
+        description: "AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO ou PIX."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO, PIX]
+      - name: pontos_liquidos
+        description: "Pontos líquidos resgatados no mês e tipo (estornos totais contam 0)."
+        data_tests: [not_null]
+      - name: itens
+        description: "Itens de pedido do mês e tipo, APROVADO e ESTORNADO."
+        data_tests: [not_null]
+      - name: valor_reais
+        description: "Valor em reais (R$, product_value) dos itens do mês e tipo, APROVADO e ESTORNADO."
+      - name: reais_por_ponto
+        description: "R$ por ponto dos itens APROVADO (valor_reais / pontos_brutos). No Pix é 0,019. Nulo se não houve item aprovado."
+
+  - name: mart_pre_pos_pix
+    description: >
+      Comparação do volume de resgates antes e depois do Pix. Grão: tipo_resgate × período (PRE ou POS), 8 linhas.
+      PRE = média mensal de 2026-02 a 2026-04 (3 meses); POS = média mensal de 2026-06 a 2026-09 (4 meses). Ficam de
+      fora janeiro/2026 (outlier: 96,8% de aéreas) e maio/2026 (mês do lançamento do Pix em 27/05). A variação só é
+      preenchida nas linhas POS. É uma comparação descritiva de médias, não estima o efeito causal do Pix.
+    columns:
+      - name: tipo_resgate
+        description: "AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO ou PIX."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [AEREO, VAREJO_PRODUTO, TRANSFERENCIA_PARCEIRO, PIX]
+      - name: periodo
+        description: "PRE (2026-02 a 2026-04) ou POS (2026-06 a 2026-09)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [PRE, POS]
+      - name: meses_no_periodo
+        description: "Quantidade de meses usada na média (3 no PRE e 4 no POS)."
+        data_tests: [not_null]
+      - name: media_mensal_pontos_liquidos
+        description: "Média mensal de pontos líquidos do tipo no período."
+        data_tests: [not_null]
+      - name: variacao_absoluta
+        description: "Média POS menos média PRE, em pontos por mês. Só nas linhas POS; nulo no PRE."
+      - name: variacao_pct
+        description: "(média POS − média PRE) / média PRE, em fração (0,10 = +10%). Só nas linhas POS. Nulo no Pix, onde a média PRE é zero."
+
+  - name: mart_cenarios_meta
+    description: >
+      Cenários das metas de aéreas e varejo. Grão: mês (2026-06 a 2026-09) × cenário. REAL repete mart_metas_mensal.
+      SEM_PIX é um cálculo aritmético: retira os pontos Pix do total do mês e mantém todo o resto igual. NÃO assume que
+      o cliente trocaria os pontos por outro tipo de resgate nem que o volume total se manteria; mostra apenas como os
+      percentuais ficariam sem os pontos Pix. pontos_varejo_adicionais_* usa (0,2 × total − varejo) / 0,8, que são os
+      pontos de varejo que precisariam ser somados ao total para o varejo chegar a 20% (limitado a zero quando a meta
+      já é atendida). Varejo estrito = só produtos; varejo amplo = produtos mais transferências a parceiros.
+    columns:
+      - name: mes
+        description: "Mês AAAA-MM (horário de Brasília), de 2026-06 a 2026-09."
+        data_tests: [not_null]
+      - name: cenario
+        description: "REAL (pontos como ocorreram) ou SEM_PIX (pontos Pix removidos do total, resto igual)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [REAL, SEM_PIX]
+      - name: pontos_liquidos_total
+        description: "Total de pontos líquidos do cenário. No SEM_PIX é o total real menos os pontos Pix."
+        data_tests: [not_null]
+      - name: pontos_aereo
+        description: "Pontos líquidos em aéreas (igual nos dois cenários)."
+      - name: pontos_varejo_estrito
+        description: "Pontos líquidos em produtos de varejo."
+      - name: pontos_varejo_amplo
+        description: "Pontos líquidos em produtos mais transferências a parceiros."
+      - name: pct_aereo
+        description: "Fração (0 a 1) de aéreas sobre o total do cenário."
+      - name: pct_varejo_estrito
+        description: "Fração (0 a 1) de varejo estrito sobre o total do cenário."
+      - name: pct_varejo_amplo
+        description: "Fração (0 a 1) de varejo amplo sobre o total do cenário."
+      - name: atende_meta_aereo
+        description: "Verdadeiro se pct_aereo >= 0,50."
+      - name: atende_meta_varejo_estrito
+        description: "Verdadeiro se pct_varejo_estrito >= 0,20."
+      - name: atende_meta_varejo_amplo
+        description: "Verdadeiro se pct_varejo_amplo >= 0,20."
+      - name: pontos_varejo_adicionais_estrito
+        description: "Pontos de varejo estrito a acrescentar para chegar a 20%: (0,2 × total − varejo estrito) / 0,8, mínimo zero."
+      - name: pontos_varejo_adicionais_amplo
+        description: "Pontos de varejo amplo a acrescentar para chegar a 20%: (0,2 × total − varejo amplo) / 0,8, mínimo zero."
+
+  - name: mart_pix_adesao_campanha
+    description: >
+      Adesão ao Pix por exposição à campanha de lançamento. Grão: grupo (RECEBEU_CMP_LANCAMENTO_PIX ou NAO_RECEBEU).
+      Universo: usuários com pelo menos 1 resgate de qualquer tipo (linhas de fct_resgates) entre 01/04 e 30/09/2026.
+      Recebeu = há envio da campanha CMP_LANCAMENTO_PIX ao usuário, em qualquer data. É uma comparação observacional:
+      não há grupo de controle (control_group vazio) e há viés de seleção (a campanha não foi enviada a uma amostra
+      aleatória, e o universo só tem quem resgatou algo). Não permite concluir que a campanha causou a adesão.
+    columns:
+      - name: grupo
+        description: "RECEBEU_CMP_LANCAMENTO_PIX ou NAO_RECEBEU. Chave primária."
+        data_tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [RECEBEU_CMP_LANCAMENTO_PIX, NAO_RECEBEU]
+      - name: usuarios
+        description: "Usuários do universo no grupo."
+        data_tests: [not_null]
+      - name: usuarios_resgataram_pix
+        description: "Usuários do grupo com pelo menos 1 resgate Pix no período."
+      - name: pct_resgataram_pix
+        description: "usuarios_resgataram_pix / usuarios, em fração (0 a 1)."
+        data_tests: [not_null]
